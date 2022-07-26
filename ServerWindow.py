@@ -4,6 +4,8 @@ from tkinter import *
 from Player import Player
 import logging
 import threading
+from Server import Server
+import multiprocessing
 
 
 def start_game_window(player_new):
@@ -24,11 +26,13 @@ class ServerWindow(WindowTemplate):
 
     def __init__(self, window_name):
         super().__init__(window_name, Tk())
+        self.server = None
         self.listbox = ListBoxTemp(self.root, 6, 45, 'SINGLE')
         self.dic_players = {}
         self.player_id = 0
         # self.load_background_music('sounds/Tenacious D - Master Exploder.wav', -1)
         self.edit_server_window()
+        threading.Thread(target=Server().run).start()
         logging.info('Server window started')
 
     def create_add_player_frame(self):

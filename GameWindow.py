@@ -1,6 +1,5 @@
-import os
-import threading
-
+import queue
+from Client import Client
 from WindowTemplate import WindowTemplate
 from tkinter import *
 from PIL import ImageTk, Image
@@ -20,10 +19,12 @@ class GameWindow(WindowTemplate):
     font_score = 'Helvetica 14 bold'
 
     def __init__(self, player_id, player_name):
-        super().__init__('Client-- Id - ' + str(player_id) + ', Name - ' + player_name,Toplevel())
+        super().__init__('Client-- Id - ' + str(player_id) + ', Name - ' + player_name, Toplevel())
         logging.info('Game window started')
+        self.Q_messages_received = queue.Queue()
         self.image_type = "animated_"
         self.player_info = Player(player_id, player_name)
+        self.C_player = Client(self.player_info, self.messages_received).run_cl()
         self.round_count = 1
         self.player_score = 0
         self.pc_score = 0
@@ -51,6 +52,11 @@ class GameWindow(WindowTemplate):
         self.F_game = self.create_game_frame()
         self.add_action_to_menubar()
 
+    def action(self):
+        message_received = self.Q_messages_received.get(block=True)
+        if message_received == self.C_player.dict_messages[1]:
+            self.config_bottom_button()
+
     def show_frame_in_grid(self, frame):
         """
         add selected frame to the top grid
@@ -69,14 +75,19 @@ class GameWindow(WindowTemplate):
         self.add_widgets(B_bottom)
         return B_bottom
 
-    def config_bottom_button(self, text, state, func):
+    def config_bottom_button(self, text='', state='', func=None):
         """
         config the button at the bottom of the window
         :param text: the text in the button
         :param state: normal or disable
         :param func: function that will run when the user clicked the button
         """
-        self.B_bottom.configure(text=text, state=state, command=func)
+        if len(text) != 0:
+            self.B_bottom.configure(text=text)
+        if len(state) != 0:
+            self.B_bottom.configure(state=state)
+        if func is not None:
+            self.B_bottom.configure(command=func)
 
     def create_main_menu(self):
         """
@@ -85,7 +96,7 @@ class GameWindow(WindowTemplate):
         """
         # create widgets
         F_main_menu = Frame(self.root)
-        self.config_bottom_button("start", "normal", lambda: self.start_game())
+        self.config_bottom_button("start", 'disable', lambda: self.start_game())
         # adding image
         img_main_menu = PhotoImage(file=r"images/event-featured-the-legend-of-rock-paper-scissors-1634241914.png")
         img_main_menu = img_main_menu.subsample(2, 2)
@@ -205,6 +216,7 @@ class GameWindow(WindowTemplate):
         """
         starting the game
         """
+        self.C_player.send_info("start")
         self.click_sound_valid()
         self.load_background_music('sounds/start.wav', 1)
         logging.info('Player started a new game')
