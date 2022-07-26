@@ -8,7 +8,6 @@ from Server import Server
 import queue
 
 
-
 def start_game_window(player_new):
     x = GameWindow(player_new.id, player_new.name)
     try:
@@ -30,8 +29,8 @@ class ServerWindow(WindowTemplate):
         self.server = None
         self.Q_server = queue.Queue()
         self.listbox = ListBoxTemp(self.root, 6, 45, 'browse')
-        self.listbox.heading('id', text='Player id',anchor=W)
-        self.listbox.heading('name', text='Player name',anchor=W)
+        self.listbox.heading('id', text='Player id', anchor=W, )
+        self.listbox.heading('name', text='Player name', anchor=W)
         self.dic_players = {}
         self.player_id = 0
         self.root.bind('<Motion>', self.check_queue)
@@ -40,10 +39,10 @@ class ServerWindow(WindowTemplate):
         threading.Thread(target=Server(self.Q_server).run).start()
         logging.info('Server window started')
 
-    def check_queue(self,event):
+    def check_queue(self, event):
         if self.Q_server.empty() is False:
             message = self.Q_server.get()
-            if message[0:4]=="exit":
+            if message[0:4] == "exit":
                 self.delete_player_by_id(int(message[5:]))
 
     def create_add_player_frame(self):
@@ -71,24 +70,23 @@ class ServerWindow(WindowTemplate):
             player_new = Player(self.player_id, name)
             self.dic_players[self.player_id] = player_new.name
             create_player_thread(player_new)
-            self.listbox.insert('', END, values=(self.player_id , name))
+            self.listbox.insert('', END, values=(self.player_id, name))
             logging.info('Player ' + "Id: " + str(self.player_id) + ", Name: " + name + ' was added')
             E_playerName.delete(0, 'end')
         else:
             self.click_sound_error()
 
-    def delete_player_by_selection(self, selected_player):
-        player_info = self.listbox.get(selected_player)
-        id_selected_player = self.get_id_from_info(player_info)
-        del self.dic_players[id_selected_player]
-        self.listbox.delete(selected_player)
-        logging.info('Player ' + player_info + ' was disconnected')
-
     def delete_selected_player_from_listbox(self):
         self.click_sound_valid()
-        selected_player = self.listbox.curselection()
+        selected_player = self.listbox.selection()
         if selected_player:
-            self.delete_player_by_selection(selected_player)
+            player_info = self.listbox.item(selected_player).get("values")
+            player_id = player_info[0]
+            player_name = player_info[1]
+            print(player_id)
+            self.listbox.delete(selected_player)
+            del self.dic_players[player_id]
+            logging.info('Player id: ' + str(player_id) + ', name: ' + player_name + 'was disconnected')
         else:
             self.click_sound_error()
 
@@ -97,9 +95,7 @@ class ServerWindow(WindowTemplate):
         selected_player = self.listbox.curselection()
         if self.listbox.size() != 0:
             self.listbox.delete(0, END)
-            self.dic_players={}
-
-
+            self.dic_players = {}
         else:
             self.click_sound_error()
 
@@ -137,4 +133,3 @@ class ServerWindow(WindowTemplate):
         del self.dic_players[id_player]
         for player in self.listbox.get(0, END):
             print(player)
-
