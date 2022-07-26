@@ -143,7 +143,7 @@ class ListBoxTemp(ttk.Treeview):
     row = 0
     font = 'Helvetica 12'
 
-    def __init__(self, master, height, width, mode):
+    def __init__(self, master, height, mode):
         self.frame = Frame(master)
         columns = ('id', 'name')
         style = ttk.Style()

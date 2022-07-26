@@ -28,13 +28,12 @@ class ServerWindow(WindowTemplate):
         super().__init__(window_name, Tk())
         self.server = None
         self.Q_server = queue.Queue()
-        self.listbox = ListBoxTemp(self.root, 6, 45, 'browse')
-        self.listbox.heading('id', text='Player id', anchor=W, )
-        self.listbox.heading('name', text='Player name', anchor=W)
+        self.listbox = ListBoxTemp(self.root, 6, 'browse')
         self.dic_players = {}
         self.player_id = 0
         self.root.bind('<Motion>', self.check_queue)
         # self.load_background_music('sounds/Tenacious D - Master Exploder.wav', -1)
+        self.edit_listbox()
         self.edit_server_window()
         threading.Thread(target=Server(self.Q_server).run).start()
         logging.info('Server window started')
@@ -44,6 +43,10 @@ class ServerWindow(WindowTemplate):
             message = self.Q_server.get()
             if message[0:4] == "exit":
                 self.delete_player_by_id(int(message[5:]))
+
+    def edit_listbox(self):
+        self.listbox.heading('id', text='Player id', anchor=W, )
+        self.listbox.heading('name', text='Player name', anchor=W)
 
     def create_add_player_frame(self):
         F_addPlayer = Frame(self.root)
@@ -83,7 +86,6 @@ class ServerWindow(WindowTemplate):
             player_info = self.listbox.item(selected_player).get("values")
             player_id = player_info[0]
             player_name = player_info[1]
-            print(player_id)
             self.listbox.delete(selected_player)
             del self.dic_players[player_id]
             logging.info('Player id: ' + str(player_id) + ', name: ' + player_name + 'was disconnected')
@@ -92,9 +94,9 @@ class ServerWindow(WindowTemplate):
 
     def delete_all_players_from_listbox(self):
         self.click_sound_valid()
-        selected_player = self.listbox.curselection()
-        if self.listbox.size() != 0:
-            self.listbox.delete(0, END)
+        if self.listbox.size != 0:
+            for i in self.listbox.get_children():
+                self.listbox.delete(i)
             self.dic_players = {}
         else:
             self.click_sound_error()
@@ -129,7 +131,3 @@ class ServerWindow(WindowTemplate):
         end_index = player_info.index(",")
         return int(player_info[4:end_index])
 
-    def delete_player_by_id(self, id_player):
-        del self.dic_players[id_player]
-        for player in self.listbox.get(0, END):
-            print(player)
