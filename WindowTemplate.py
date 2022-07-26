@@ -5,6 +5,7 @@ from tkinter import *
 import winsound
 import logging
 import pygame
+from tkinter import ttk
 
 
 class WindowTemplate:
@@ -137,14 +138,19 @@ creates and commands to it
                 self.widgets_dic["frame"].append(widget)
 
 
-class ListBoxTemp(Listbox):
+class ListBoxTemp(ttk.Treeview):
     column = 0
     row = 0
     font = 'Helvetica 12'
 
     def __init__(self, master, height, width, mode):
         self.frame = Frame(master)
-        super().__init__(self.frame, height=height, width=width, selectmode=mode, font=self.font)
+        columns = ('id', 'name')
+        style = ttk.Style()
+        style.configure("mystyle.Treeview", highlightthickness=0, bd=0,font=('Calibri', 11))  # Modify the font of the body
+        style.configure("mystyle.Treeview.Heading", font=('Calibri', 13, 'bold'))  # Modify the font of the headings
+        style.layout("mystyle.Treeview", [('mystyle.Treeview.treearea', {'sticky': 'nswe'})])  # Remove the borders
+        super().__init__(self.frame, height=height, columns=columns, show='headings', selectmode=mode,style="mystyle.Treeview")
 
         # link a scrollbar to a list
         scrollbar = Scrollbar(self.frame, orient='vertical', command=self.yview)
