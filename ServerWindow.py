@@ -1,4 +1,6 @@
 # Music by Lesfm from Pixabay
+from tkinter import messagebox
+
 from WindowTemplate import WindowTemplate, ListBoxTemp
 from GameWindow import GameWindow
 from tkinter import *
@@ -25,6 +27,7 @@ def create_player_thread(player_new):
 class ServerWindow(WindowTemplate):
     pad_y = 10
     pad_x = 10
+    name_length=12
 
     def __init__(self, window_name):
         super().__init__(window_name, Tk())
@@ -71,7 +74,7 @@ class ServerWindow(WindowTemplate):
 
     def set_player_name(self, E_playerName):
         name = E_playerName.get()
-        if (len(name) != 0) and (name.isalpha()):
+        if (len(name) != 0) and (name.isalpha() and (len(name) <= self.name_length)):
             self.click_sound_valid()
             self.player_id = self.player_id + 1
             player_new = Player(self.player_id, name)
@@ -81,6 +84,7 @@ class ServerWindow(WindowTemplate):
             logging.info('Player ' + "Id: " + str(self.player_id) + ", Name: " + name + ' was added')
             E_playerName.delete(0, 'end')
         else:
+            messagebox.showerror('R.P.S - Server', 'Error: Name can be only with letters, no spaces and in max length of 12')
             self.click_sound_error()
 
     def delete_selected_player_from_listbox(self):
@@ -104,7 +108,7 @@ class ServerWindow(WindowTemplate):
                 self.listbox.delete(player_index)
             for player_id in self.dic_players.keys():
                 self.disconnect_client(player_id)
-            self.dic_players = {}
+            self.dic_players.clear()
         else:
             self.click_sound_error()
 
@@ -136,7 +140,6 @@ class ServerWindow(WindowTemplate):
         L_img.image = img_server
 
         # place in grid
-
         L_title.pack(pady=self.pad_y * 2)
         self.listbox.frame.pack(pady=self.pad_y)
         F_addPlayer.pack(pady=self.pad_y)
@@ -146,3 +149,7 @@ class ServerWindow(WindowTemplate):
 
         # add to widgets list
         self.add_widgets(L_img, L_title, self.listbox, B_disconnectPlayer, B_disconnectAll)
+
+    def exit_app(self):
+        self.delete_all_players_from_listbox()
+        super().exit_app()

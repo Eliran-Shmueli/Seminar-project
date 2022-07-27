@@ -53,11 +53,9 @@ class GameWindow(WindowTemplate):
         if self.Q_messages_received.empty() is False:
             message = self.Q_messages_received.get()
             if message.is_message_exit():
-
                 message.set_message_goodbye()
                 self.send_info(message)
                 super().exit_app()
-
             else:
                 self.Q_messages_received.put(message)
 
@@ -72,7 +70,7 @@ class GameWindow(WindowTemplate):
         if len(self.player_choice) != 0 and len(self.pc_choice) != 0:
             self.config_bottom_button(state="normal")
 
-    def action(self):
+    def actions(self):
         message_received = self.Q_messages_received.get(block=True)
         if message_received.is_message_ready():
             self.config_bottom_button("start", 'normal', lambda: self.start_game())
@@ -81,6 +79,8 @@ class GameWindow(WindowTemplate):
             self.L_pc_pick.configure(text="pc chose")
             self.check_if_everybody_choose()
         if message_received.is_message_goodbye():
+            self.message.set_message_goodbye()
+            self.send_info(self.message)
             super().exit_app()
 
     def show_frame_in_grid(self, frame):
@@ -122,7 +122,7 @@ class GameWindow(WindowTemplate):
         """
         # create widgets
         F_main_menu = Frame(self.root)
-        self.action()
+        self.actions()
         # adding image
         img_main_menu = PhotoImage(file=r"images/event-featured-the-legend-of-rock-paper-scissors-1634241914.png")
         img_main_menu = img_main_menu.subsample(2, 2)
@@ -146,7 +146,7 @@ class GameWindow(WindowTemplate):
         """
         # create widgets
         F_scores = Frame(F_game)
-        self.L_player_score = Label(F_scores, text="Player: " + str(self.player_score), font=self.font_score)
+        self.L_player_score = Label(F_scores, text=self.player_info.name+": " + str(self.player_score), font=self.font_score)
         self.L_pc_score = Label(F_scores, text="Pc: " + str(self.pc_score), font=self.font_score)
         # put in order
         self.L_player_score.pack(side=LEFT, padx=self.pad_x)
@@ -248,7 +248,7 @@ class GameWindow(WindowTemplate):
         self.reset_choices()
         self.message.set_message_choose()
         self.send_info(self.message)
-        self.action()
+        self.actions()
         self.click_sound_valid()
         self.load_background_music(1, 'sounds/start.wav', self.num_music_loops)
         logging.info('Player started a new game')
@@ -288,7 +288,7 @@ class GameWindow(WindowTemplate):
             self.config_bottom_button("Go!!!", 'disabled', lambda: self.play_game())
             self.message.set_message_choose()
             self.send_info(self.message)
-            self.action()
+            self.actions()
             self.update_scores_and_round_labels()
             self.F_round_result.grid_forget()
             self.show_frame_in_grid(self.F_game)
@@ -316,7 +316,7 @@ class GameWindow(WindowTemplate):
         """
         updates the labels of round and scores
         """
-        self.L_player_score.configure(text="Player: " + str(self.player_score))
+        self.L_player_score.configure(text=self.player_info.name+": " + str(self.player_score))
         self.L_pc_score.configure(text="Pc: " + str(self.pc_score))
         self.L_title.configure(text="Round: " + str(self.round_count))
 
@@ -329,13 +329,13 @@ class GameWindow(WindowTemplate):
         self.player_choice = pick
         self.check_if_everybody_choose()
         self.L_player_pick.configure(text="You chose: " + pick)
-        self.B_bottom.configure(state='normal')
+        self.check_if_everybody_choose()
 
     def update_final_round_frame(self):
         """
         updates the titles and image at the final result frame, according to the scores
         """
-        self.L_final_result_player_score.configure(text="Player: " + str(self.player_score))
+        self.L_final_result_player_score.configure(text=self.player_info.name+": " + str(self.player_score))
         self.L_final_result_pc_score.configure(text="Pc: " + str(self.pc_score))
         if self.player_score == self.pc_score:
             logging.info('The game ended in a tie')
@@ -488,4 +488,4 @@ class GameWindow(WindowTemplate):
     def exit_app(self):
         self.message.set_message_exit()
         self.send_info(self.message)  # exit
-        self.action()
+        self.actions()

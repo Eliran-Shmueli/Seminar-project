@@ -86,6 +86,9 @@ class Server:
     def actions(self, message_received, key, mask):
         if message_received.is_message_goodbye():
             print("client id " + str(message_received.id) + " has exit")
+            print(f"sever - Closing connection to {key.data.addr}")
+            self.sel.unregister(key.fileobj)
+            key.fileobj.close()
         else:
             if message_received.is_message_connected():
                 player_id= message_received.id
