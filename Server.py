@@ -53,7 +53,7 @@ class Server:
 
     def accept_wrapper(self, sock):
         socket_connected, addr = sock.accept()  # Should be ready to read
-        print(f"sever - Accepted connection from {addr}")
+        print(f"server - Accepted connection from {addr}")
         socket_connected.setblocking(False)
         data = types.SimpleNamespace(addr=addr, byte_in=b"", byte_out=b"")
         events = selectors.EVENT_READ | selectors.EVENT_WRITE

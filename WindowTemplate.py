@@ -116,6 +116,7 @@ creates and commands to it
     def change_background_color(self):
         color = askcolor()[1]
         logging.info('The background color was changed to ' + color)
+        self.root.configure(bg=color)
         for key in self.widgets_dic.keys():
             if (key != "listbox") and (key != "button"):
                 for widget in self.widgets_dic[key]:
