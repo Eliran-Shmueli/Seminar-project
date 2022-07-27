@@ -64,6 +64,7 @@ edit window template
         self.root.title(window_name)
         self.root.columnconfigure(3, weight=1)
         self.root.columnconfigure(4, weight=3)
+        self.root.iconbitmap(r'images/icons/mushroom.ico')
         self.add_menubar()
 
     def add_menubar(self):

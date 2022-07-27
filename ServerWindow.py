@@ -82,9 +82,10 @@ class ServerWindow(WindowTemplate):
             logging.info('Player ' + "Id: " + str(self.player_id) + ", Name: " + name + ' was added')
             E_playerName.delete(0, 'end')
         else:
+            self.click_sound_error()
             messagebox.showerror('R.P.S - Server',
                                  'Error: Name can be only with letters, no spaces and in max length of 12')
-            self.click_sound_error()
+
 
     def delete_selected_player_from_listbox(self):
         self.click_sound_valid()

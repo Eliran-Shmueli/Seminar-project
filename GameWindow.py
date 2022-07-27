@@ -147,6 +147,7 @@ class GameWindow(WindowTemplate):
         """
         # create widgets
         F_scores = Frame(F_game)
+
         self.L_player_score = Label(F_scores, text=self.player_info.name + ": " + str(self.player_score),
                                     font=self.font_score)
         self.L_pc_score = Label(F_scores, text="Pc: " + str(self.pc_score), font=self.font_score)
