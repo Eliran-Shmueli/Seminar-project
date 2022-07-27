@@ -86,7 +86,6 @@ class ServerWindow(WindowTemplate):
             messagebox.showerror('R.P.S - Server',
                                  'Error: Name can be only with letters, no spaces and in max length of 12')
 
-
     def delete_selected_player_from_listbox(self):
         self.click_sound_valid()
         selected_player = self.listbox.selection()
