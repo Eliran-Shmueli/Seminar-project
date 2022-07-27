@@ -4,6 +4,7 @@ import types
 import pickle
 import logging
 import random
+from Message import Message
 import queue
 
 
@@ -24,8 +25,9 @@ class Server:
         self.port = 1231
         self.full_msg = b''
         self.dict_clients = {}
-        self.dict_messages = {0: "connected", 1: "ready", 2: "choose", 3: "exit", 4: "goodbye"}
-        self.dict_message_struct = {"id": -1, "message": self.dict_messages[0], "num_data": 0, "data": None}
+        self.message = Message(-1)
+
+
 
     def run(self):
         lsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -52,7 +54,7 @@ class Server:
         socket_connected, addr = sock.accept()  # Should be ready to read
         print(f"sever - Accepted connection from {addr}")
         socket_connected.setblocking(False)
-        data = types.SimpleNamespace(addr=addr, inb=b"", outb=b"")
+        data = types.SimpleNamespace(addr=addr, byte_in=b"", byte_out=b"")
         events = selectors.EVENT_READ | selectors.EVENT_WRITE
         self.sel.register(socket_connected, events, data=data)
 
@@ -62,11 +64,11 @@ class Server:
         if mask & selectors.EVENT_READ:
             recv_data = sock.recv(1024)  # Should be ready to read
             if recv_data:
-                data.inb += recv_data
-                data_received = pickle.loads(data.inb[self.HEADERSIZE:])
-                print("sever - info from client " + data_received["message"])
-                self.actions(data_received, key, mask)
-                data.inb = b''
+                data.byte_in += recv_data
+                message_received = pickle.loads(data.byte_in[self.HEADERSIZE:])
+                print("sever - info from client " + message_received.message)
+                self.actions(message_received, key, mask)
+                data.byte_in = b''
 
         # else:
         # print(f"sever - Closing connection to {data.addr}")
@@ -74,24 +76,21 @@ class Server:
         # sock.close()
         if mask & selectors.EVENT_WRITE:
 
-            if data.outb:
-                sent = sock.send(data.outb)  # Should be ready to write
-                data.outb = data.outb[sent:]
-                data.outb = b''
+            if data.byte_out:
+                sent = sock.send(data.byte_out)  # Should be ready to write
+                data.byte_out = data.byte_out[sent:]
+                data.byte_out = b''
 
-    def actions(self, data_received, key, mask):
-        if data_received["message"] == self.dict_messages[0]:  # connected
-            self.dict_message_struct["message"] = self.dict_messages[1]
-            self.append_message(key.data, self.dict_message_struct)
-        if data_received["message"] == self.dict_messages[2]:  # choose
-            self.dict_message_struct["message"] = computer_pick()
-            self.append_message(key.data, self.dict_message_struct)
-        if data_received["message"] == self.dict_messages[3]:  # exit
-            print("hello")
-            self.dict_message_struct["message"] = self.dict_messages[4]
-            self.append_message(key.data, self.dict_message_struct)
-            self.Q_server.put(data_received)
+    def actions(self, message_received, key, mask):
+        if message_received.is_message_connected():
+            self.message.set_message_ready()
+        if message_received.is_message_choose():
+            self.message.set_message_data(computer_pick())
+        if message_received.is_message_exit():
+            self.message.set_message_goodbye()
+            self.Q_server.put(message_received)
+        self.append_message(key.data, self.message)
 
     def append_message(self, data, message):
-        data.outb = pickle.dumps(message)
-        data.outb = bytes(f"{len(data.outb):<{self.HEADERSIZE}}", 'utf-8') + data.outb
+        data.byte_out = pickle.dumps(message)
+        data.byte_out = bytes(f"{len(data.byte_out):<{self.HEADERSIZE}}", 'utf-8') + data.byte_out

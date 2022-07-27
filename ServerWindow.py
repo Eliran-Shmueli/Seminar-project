@@ -6,6 +6,8 @@ import logging
 import threading
 from Server import Server
 import queue
+from Message import Message
+
 # Music by Lesfm from Pixabay
 
 def start_game_window(player_new):
@@ -32,7 +34,7 @@ class ServerWindow(WindowTemplate):
         self.dic_players = {}
         self.player_id = 0
         self.root.bind('<Motion>', self.check_queue)
-        self.load_background_music(0,'sounds/energetic-indie-rock-115484.wav', -1)
+        # self.load_background_music(0,'sounds/energetic-indie-rock-115484.wav', -1)
         self.edit_listbox()
         self.edit_server_window()
         threading.Thread(target=Server(self.Q_server).run).start()
@@ -44,9 +46,9 @@ class ServerWindow(WindowTemplate):
     def check_queue(self, event):
         if self.Q_server.empty() is False:
             message = self.Q_server.get()
-            if message["message"] == "exit":
+            if message.is_message_exit():
                 pass
-               # self.delete_player_by_id(message["id"])
+            # self.delete_player_by_id(message["id"])
 
     def edit_listbox(self):
         self.listbox.heading('id', text='Player id', anchor=W, )
@@ -134,4 +136,3 @@ class ServerWindow(WindowTemplate):
     def get_id_from_info(self, player_info):
         end_index = player_info.index(",")
         return int(player_info[4:end_index])
-

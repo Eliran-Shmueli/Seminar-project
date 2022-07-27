@@ -4,22 +4,19 @@ import selectors
 import types
 import pickle
 import queue
-
+from Message import Message
 
 class Client:
     HEADERSIZE = 10
 
-    def __init__(self, player_info):
+    def __init__(self, player_info,message):
         host = socket.gethostname()
         port = 1231
-        self.dict_messages = {0: "connected", 1: "ready", 2: "choose", 3: "exit", 4: "goodbye"}
-        self.dict_message_struct = {"id": player_info.id, "message": self.dict_messages[0], "num_data": 0, "data": None}
+        self.player_info = player_info
         self.Q_messages_received = queue.Queue()
         self.Q_messages_send = queue.Queue()
-        self.Q_messages_send.put(self.dict_message_struct)
         self.sel = selectors.DefaultSelector()
-        self.player_info = player_info
-
+        self.Q_messages_send.put(message)
         self.run = True
         self.output_send = None
         self.start_connections(host, port)
@@ -49,7 +46,8 @@ class Client:
         sock.setblocking(False)
         sock.connect_ex(server_addr)
         events = selectors.EVENT_READ | selectors.EVENT_WRITE
-        data = types.SimpleNamespace(inb=b"", outb=b"")
+        data = types.SimpleNamespace(byte_in=b"", byte_out=b"")
+        data = types.SimpleNamespace(byte_in=b"", byte_out=b"")
         self.sel.register(sock, events, data=data)
 
     def service_connection(self, key, mask):
@@ -59,11 +57,11 @@ class Client:
         if mask & selectors.EVENT_READ:
             recv_data = sock.recv(1024)  # Should be ready to read
             if recv_data:
-                data.inb += recv_data
-                data_received = pickle.loads(data.inb[self.HEADERSIZE:])
+                data.byte_in += recv_data
+                data_received = pickle.loads(data.byte_in[self.HEADERSIZE:])
                 self.Q_messages_received.put(data_received)
-                print("client id " + str(self.player_info.id) + " - info from server: " + data_received["message"])
-                data.inb = b""
+                print("client id " + str(self.player_info.id) + " - info from server: " + data_received.message)
+                data.byte_in = b""
                 self.run = False
         #  if not recv_data:
         # print(f"Closing connection ")
@@ -71,21 +69,16 @@ class Client:
         #  sock.close()
         if mask & selectors.EVENT_WRITE:
 
-            if not data.outb and self.Q_messages_send.empty() is False:
-                data.outb = pickle.dumps(self.Q_messages_send.get())
-                data.outb = bytes(f"{len(data.outb):<{HEADERSIZE}}", 'utf-8') + data.outb
-                if data.outb:
-                    sent = sock.send(data.outb)  # Should be ready to write
-                    data.outb = data.outb[sent:]
+            if not data.byte_out and self.Q_messages_send.empty() is False:
+                data.byte_out = pickle.dumps(self.Q_messages_send.get())
+                data.byte_out = bytes(f"{len(data.byte_out):<{HEADERSIZE}}", 'utf-8') + data.byte_out
+                if data.byte_out:
+                    sent = sock.send(data.byte_out)  # Should be ready to write
+                    data.byte_out = data.byte_out[sent:]
                     # self.run = True
 
     def send_info(self, message,data=None):
-        self.dict_message_struct["message"]=message
-        self.dict_message_struct["data"] = data
-        if data is not None:
-            self.dict_message_struct["num_data"]=1
-        else:
-            self.dict_message_struct["num_data"] = 0
+        message.set_message_data(data)
         self.run = True
-        self.Q_messages_send.put(self.dict_message_struct)
+        self.Q_messages_send.put(message)
         self.run_cl()

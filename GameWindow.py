@@ -5,6 +5,7 @@ from tkinter import *
 from PIL import ImageTk, Image
 from Player import Player
 import logging
+from Message import Message
 
 
 class GameWindow(WindowTemplate):
@@ -17,7 +18,7 @@ class GameWindow(WindowTemplate):
         logging.info('Game window started')
         self.image_type = "animated_"
         self.player_info = Player(player_id, player_name)
-        self.C_player = Client(self.player_info)
+        self.message = Message(self.player_info.id)
         self.round_count = 1
         self.player_score = 0
         self.pc_score = 0
@@ -39,6 +40,8 @@ class GameWindow(WindowTemplate):
         self.B_paper = None
         self.B_scissors = None
         self.B_bottom = self.init_bottom_button()
+        self.message.set_message_connected()
+        self.C_player = Client(self.player_info, self.message)
         self.F_round_result = self.create_round_result_frame()
         self.F_final_result = self.create_final_result_frame()
         self.F_main_menu = self.create_main_menu()
@@ -53,14 +56,14 @@ class GameWindow(WindowTemplate):
             self.config_bottom_button(state="normal")
 
     def action(self):
-        dict_message_received = self.C_player.Q_messages_received.get(block=True)
-        if dict_message_received["message"] == self.C_player.dict_messages[1]:  # ready
+        message_received = self.C_player.Q_messages_received.get(block=True)
+        if message_received.is_message_ready():
             self.config_bottom_button("start", 'normal', lambda: self.start_game())
-        if dict_message_received["message"] in {"rock", "paper", "scissors"}:  # server choose
-            self.pc_choice = dict_message_received["message"]
+        if message_received.is_message_data():
+            self.pc_choice = message_received.data
             self.L_pc_pick.configure(text="pc chose")
             self.check_if_everybody_choose()
-        if dict_message_received["message"] == self.C_player.dict_messages[4]:  # exit
+        if message_received.is_message_goodbye():
             super().exit_app()
 
     def show_frame_in_grid(self, frame):
@@ -227,7 +230,8 @@ class GameWindow(WindowTemplate):
         """
         self.config_bottom_button('Go!!!', 'disabled', lambda: self.play_game())
         self.reset_choices()
-        self.C_player.send_info("choose")
+        self.message.set_message_choose()
+        self.C_player.send_info(self.message)
         self.action()
         self.click_sound_valid()
         self.load_background_music(1, 'sounds/start.wav', self.num_music_loops)
@@ -266,7 +270,8 @@ class GameWindow(WindowTemplate):
         else:
             self.reset_choices()
             self.config_bottom_button("Go!!!", 'disabled', lambda: self.play_game())
-            self.C_player.send_info("choose")
+            self.message.set_message_choose()
+            self.C_player.send_info(self.message)
             self.action()
             self.update_scores_and_round_labels()
             self.F_round_result.grid_forget()
@@ -465,5 +470,6 @@ class GameWindow(WindowTemplate):
         self.L_round_result_player_choice_img.configure(image=self.images.get(self.image_type + self.player_choice))
 
     def exit_app(self):
-        self.C_player.send_info(self.C_player.dict_messages[3])  # exit
+        self.message.set_message_exit()
+        self.C_player.send_info(self.message)  # exit
         self.action()
