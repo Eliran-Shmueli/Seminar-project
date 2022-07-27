@@ -34,7 +34,7 @@ class ServerWindow(WindowTemplate):
         self.dic_players = {}
         self.player_id = 0
         self.root.bind('<Motion>', self.check_queue)
-        # self.load_background_music(0,'sounds/energetic-indie-rock-115484.wav', -1)
+        self.load_background_music(0,'sounds/energetic-indie-rock-115484.wav', -1)
         self.edit_listbox()
         self.edit_server_window()
         threading.Thread(target=Server(self.Q_server).run).start()

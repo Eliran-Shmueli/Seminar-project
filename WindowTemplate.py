@@ -14,6 +14,7 @@ class WindowTemplate:
     title_font = 'Helvetica 20 underline bold'
     font = 'Helvetica 12'
     music_volume = 0.4
+    num_of_channels = 2
 
     def __init__(self, window_name, window):
         logging.basicConfig(filename=window_name + '.log', filemode='w', format='%(asctime)s - %(message)s',
@@ -29,7 +30,8 @@ class WindowTemplate:
 
     def init_background_music(self):
         pygame.mixer.init()
-        pygame.mixer.music.set_volume(self.music_volume)
+        for channel_num in range(self.num_of_channels):
+            pygame.mixer.Channel(channel_num).set_volume(self.music_volume)
 
     def load_background_music(self, channel, path, loop):
         pygame.mixer.Channel(channel).play(pygame.mixer.Sound(path), 0)
