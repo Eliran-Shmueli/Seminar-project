@@ -18,16 +18,15 @@ def computer_pick():
 class Server:
     HEADERSIZE = 10
 
-    def __init__(self, queue):
-        self.Q_server = queue
+    def __init__(self, Q_messages_send, Q_messages_received, dic_players):
+        self.Q_messages_received = Q_messages_received
+        self.Q_messages_send = Q_messages_send
         self.sel = selectors.DefaultSelector()
         self.host = socket.gethostname()
         self.port = 1231
         self.full_msg = b''
-        self.dict_clients = {}
+        self.dic_players = dic_players
         self.message = Message(-1)
-
-
 
     def run(self):
         lsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -39,7 +38,10 @@ class Server:
 
         try:
             while True:
-                events = self.sel.select(timeout=None)
+                while self.Q_messages_send.empty() is False:
+                    key,message = self.Q_messages_send.get()
+                    self.append_message(key.data,message)
+                events = self.sel.select(timeout=1)
                 for key, mask in events:
                     if key.data is None:
                         self.accept_wrapper(key.fileobj)
@@ -83,15 +85,17 @@ class Server:
 
     def actions(self, message_received, key, mask):
         if message_received.is_message_goodbye():
-            print("client id "+ str(message_received.id) + " has exit")
+            print("client id " + str(message_received.id) + " has exit")
         else:
             if message_received.is_message_connected():
+                player_id= message_received.id
+                self.dic_players[player_id].socket=key
                 self.message.set_message_ready()
             if message_received.is_message_choose():
                 self.message.set_message_data(computer_pick())
             if message_received.is_message_exit():
                 self.message.set_message_goodbye()
-                self.Q_server.put(message_received)
+                self.Q_messages_received.put(message_received)
             self.append_message(key.data, self.message)
 
     def append_message(self, data, message):

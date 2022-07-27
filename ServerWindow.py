@@ -29,14 +29,13 @@ class ServerWindow(WindowTemplate):
     def __init__(self, window_name):
         super().__init__(window_name, Tk())
         self.server = None
-        self.Q_server = queue.Queue()
         self.listbox = ListBoxTemp(self.root, 6, 'browse')
         self.dic_players = {}
         self.player_id = 0
         # self.load_background_music(0,'sounds/energetic-indie-rock-115484.wav', -1)
         self.edit_listbox()
         self.edit_server_window()
-        threading.Thread(target=Server(self.Q_server).run).start()
+        threading.Thread(target=Server(self.Q_messages_send,self.Q_messages_received, self.dic_players).run).start()
         self.bind_widgets()
         logging.info('Server window started')
 
@@ -44,8 +43,8 @@ class ServerWindow(WindowTemplate):
         super().mute_background_music(0)
 
     def check_queue_received(self, event):
-        if self.Q_server.empty() is False:
-            message = self.Q_server.get()
+        if self.Q_messages_received.empty() is False:
+            message = self.Q_messages_received.get()
             if message.is_message_exit():
                 self.delete_player_by_id(message.id)
 
@@ -76,7 +75,7 @@ class ServerWindow(WindowTemplate):
             self.click_sound_valid()
             self.player_id = self.player_id + 1
             player_new = Player(self.player_id, name)
-            self.dic_players[self.player_id] = player_new.name
+            self.dic_players[self.player_id] = player_new
             create_player_thread(player_new)
             self.listbox.insert('', END, values=(self.player_id, name))
             logging.info('Player ' + "Id: " + str(self.player_id) + ", Name: " + name + ' was added')
@@ -92,10 +91,17 @@ class ServerWindow(WindowTemplate):
             player_id = player_info[0]
             player_name = player_info[1]
             self.listbox.delete(selected_player)
+            self.disconnect_client(player_id)
             del self.dic_players[player_id]
             logging.info('Player id: ' + str(player_id) + ', name: ' + player_name + 'was disconnected')
         else:
             self.click_sound_error()
+
+    def disconnect_client(self,player_id):
+        message= Message(player_id)
+        message.set_message_exit()
+        key= self.dic_players[player_id].socket
+        self.Q_messages_send.put((key,message))
 
     def delete_all_players_from_listbox(self):
         if len(self.listbox.get_children()) != 0:

@@ -1,3 +1,4 @@
+import queue
 import threading
 import tkinter as tk
 from tkinter.colorchooser import askcolor
@@ -22,6 +23,8 @@ class WindowTemplate:
         print('thread id ' + str(threading.get_ident()))
         self.menubar = None
         self.root = window
+        self.Q_messages_received = queue.Queue()
+        self.Q_messages_send = queue.Queue()
         self.widgets_dic = {"label": [], "button": [], "listbox": [], "frame": []}
         self.playing_music = True
         self.init_background_music()

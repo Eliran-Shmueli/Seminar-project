@@ -26,8 +26,6 @@ class GameWindow(WindowTemplate):
         self.pc_choice = None
         self.images = {}
         self.load_all_images()
-        self.Q_messages_received = queue.Queue()
-        self.Q_messages_send = queue.Queue()
         self.L_final_result_img = None
         self.L_round_result_pc_choice_img = None
         self.L_round_result_player_choice_img = None
