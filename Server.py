@@ -82,14 +82,17 @@ class Server:
                 data.byte_out = b''
 
     def actions(self, message_received, key, mask):
-        if message_received.is_message_connected():
-            self.message.set_message_ready()
-        if message_received.is_message_choose():
-            self.message.set_message_data(computer_pick())
-        if message_received.is_message_exit():
-            self.message.set_message_goodbye()
-            self.Q_server.put(message_received)
-        self.append_message(key.data, self.message)
+        if message_received.is_message_goodbye():
+            print("client id "+ str(message_received.id) + " has exit")
+        else:
+            if message_received.is_message_connected():
+                self.message.set_message_ready()
+            if message_received.is_message_choose():
+                self.message.set_message_data(computer_pick())
+            if message_received.is_message_exit():
+                self.message.set_message_goodbye()
+                self.Q_server.put(message_received)
+            self.append_message(key.data, self.message)
 
     def append_message(self, data, message):
         data.byte_out = pickle.dumps(message)

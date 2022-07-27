@@ -6,7 +6,7 @@ from PIL import ImageTk, Image
 from Player import Player
 import logging
 from Message import Message
-
+import threading
 
 class GameWindow(WindowTemplate):
     font_score = 'Helvetica 14 bold'
@@ -26,6 +26,8 @@ class GameWindow(WindowTemplate):
         self.pc_choice = None
         self.images = {}
         self.load_all_images()
+        self.Q_messages_received = queue.Queue()
+        self.Q_messages_send = queue.Queue()
         self.L_final_result_img = None
         self.L_round_result_pc_choice_img = None
         self.L_round_result_player_choice_img = None
@@ -41,12 +43,29 @@ class GameWindow(WindowTemplate):
         self.B_scissors = None
         self.B_bottom = self.init_bottom_button()
         self.message.set_message_connected()
-        self.C_player = Client(self.player_info, self.message)
+        threading.Thread(target=lambda :Client(self.player_info, self.message,self.Q_messages_send,self.Q_messages_received)).start()
         self.F_round_result = self.create_round_result_frame()
         self.F_final_result = self.create_final_result_frame()
         self.F_main_menu = self.create_main_menu()
         self.F_game = self.create_game_frame()
         self.add_action_to_menubar()
+        self.bind_widgets()
+
+    def check_queue_received(self, event):
+        if self.Q_messages_received.empty() is False:
+            message = self.Q_messages_received.get()
+            if message.is_message_exit():
+
+                message.set_message_goodbye()
+                self.send_info(message)
+                super().exit_app()
+
+            else:
+                self.Q_messages_received.put(message)
+
+    def send_info(self, message,data=None):
+        message.set_message_data(data)
+        self.Q_messages_send.put(message)
 
     def mute_background_music(self):
         super().mute_background_music(1)
@@ -56,7 +75,7 @@ class GameWindow(WindowTemplate):
             self.config_bottom_button(state="normal")
 
     def action(self):
-        message_received = self.C_player.Q_messages_received.get(block=True)
+        message_received = self.Q_messages_received.get(block=True)
         if message_received.is_message_ready():
             self.config_bottom_button("start", 'normal', lambda: self.start_game())
         if message_received.is_message_data():
@@ -105,7 +124,6 @@ class GameWindow(WindowTemplate):
         """
         # create widgets
         F_main_menu = Frame(self.root)
-        self.C_player.run_cl()
         self.action()
         # adding image
         img_main_menu = PhotoImage(file=r"images/event-featured-the-legend-of-rock-paper-scissors-1634241914.png")
@@ -231,7 +249,7 @@ class GameWindow(WindowTemplate):
         self.config_bottom_button('Go!!!', 'disabled', lambda: self.play_game())
         self.reset_choices()
         self.message.set_message_choose()
-        self.C_player.send_info(self.message)
+        self.send_info(self.message)
         self.action()
         self.click_sound_valid()
         self.load_background_music(1, 'sounds/start.wav', self.num_music_loops)
@@ -271,7 +289,7 @@ class GameWindow(WindowTemplate):
             self.reset_choices()
             self.config_bottom_button("Go!!!", 'disabled', lambda: self.play_game())
             self.message.set_message_choose()
-            self.C_player.send_info(self.message)
+            self.send_info(self.message)
             self.action()
             self.update_scores_and_round_labels()
             self.F_round_result.grid_forget()
@@ -471,5 +489,5 @@ class GameWindow(WindowTemplate):
 
     def exit_app(self):
         self.message.set_message_exit()
-        self.C_player.send_info(self.message)  # exit
+        self.send_info(self.message)  # exit
         self.action()

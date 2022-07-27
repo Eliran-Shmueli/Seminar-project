@@ -138,6 +138,14 @@ creates and commands to it
             if (type(widget) == Frame) or (type(widget) == Tk):
                 self.widgets_dic["frame"].append(widget)
 
+    def bind_widgets(self):
+        for key in self.widgets_dic.keys():
+            for widget in self.widgets_dic[key]:
+                widget.bind('<Motion>', self.check_queue_received)
+
+    def check_queue_received(self, event):
+        pass
+
 
 class ListBoxTemp(ttk.Treeview):
     column = 0

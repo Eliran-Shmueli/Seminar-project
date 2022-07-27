@@ -1,3 +1,4 @@
+# Music by Lesfm from Pixabay
 from WindowTemplate import WindowTemplate, ListBoxTemp
 from GameWindow import GameWindow
 from tkinter import *
@@ -8,7 +9,6 @@ from Server import Server
 import queue
 from Message import Message
 
-# Music by Lesfm from Pixabay
 
 def start_game_window(player_new):
     x = GameWindow(player_new.id, player_new.name)
@@ -33,22 +33,21 @@ class ServerWindow(WindowTemplate):
         self.listbox = ListBoxTemp(self.root, 6, 'browse')
         self.dic_players = {}
         self.player_id = 0
-        self.root.bind('<Motion>', self.check_queue)
-        self.load_background_music(0,'sounds/energetic-indie-rock-115484.wav', -1)
+        # self.load_background_music(0,'sounds/energetic-indie-rock-115484.wav', -1)
         self.edit_listbox()
         self.edit_server_window()
         threading.Thread(target=Server(self.Q_server).run).start()
+        self.bind_widgets()
         logging.info('Server window started')
 
     def mute_background_music(self):
         super().mute_background_music(0)
 
-    def check_queue(self, event):
+    def check_queue_received(self, event):
         if self.Q_server.empty() is False:
             message = self.Q_server.get()
             if message.is_message_exit():
-                pass
-            # self.delete_player_by_id(message["id"])
+                self.delete_player_by_id(message.id)
 
     def edit_listbox(self):
         self.listbox.heading('id', text='Player id', anchor=W, )
@@ -99,13 +98,20 @@ class ServerWindow(WindowTemplate):
             self.click_sound_error()
 
     def delete_all_players_from_listbox(self):
-        self.click_sound_valid()
-        if self.listbox.size != 0:
-            for i in self.listbox.get_children():
-                self.listbox.delete(i)
+        if len(self.listbox.get_children()) != 0:
+            self.click_sound_valid()
+            for player_index in self.listbox.get_children():
+                self.listbox.delete(player_index)
             self.dic_players = {}
         else:
             self.click_sound_error()
+
+    def delete_player_by_id(self, player_id):
+        player_list = self.listbox.get_children()
+        for player_index in player_list:
+            player_index_id = self.listbox.item(player_index).get("values")[0]
+            if player_index_id == player_id:
+                self.listbox.delete(player_index)
 
     def edit_server_window(self):
         # creating widgets
@@ -132,7 +138,3 @@ class ServerWindow(WindowTemplate):
 
         # add to widgets list
         self.add_widgets(L_img, L_title, self.listbox, B_disconnectPlayer, B_disconnectAll)
-
-    def get_id_from_info(self, player_info):
-        end_index = player_info.index(",")
-        return int(player_info[4:end_index])

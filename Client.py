@@ -6,20 +6,22 @@ import pickle
 import queue
 from Message import Message
 
+
 class Client:
     HEADERSIZE = 10
 
-    def __init__(self, player_info,message):
+    def __init__(self, player_info, message, Q_messages_send, Q_messages_received):
         host = socket.gethostname()
         port = 1231
         self.player_info = player_info
-        self.Q_messages_received = queue.Queue()
-        self.Q_messages_send = queue.Queue()
+        self.Q_messages_received = Q_messages_received
+        self.Q_messages_send = Q_messages_send
         self.sel = selectors.DefaultSelector()
         self.Q_messages_send.put(message)
         self.run = True
         self.output_send = None
         self.start_connections(host, port)
+        self.run_cl()
 
     def run_cl(self):
         try:
@@ -58,11 +60,12 @@ class Client:
             recv_data = sock.recv(1024)  # Should be ready to read
             if recv_data:
                 data.byte_in += recv_data
-                data_received = pickle.loads(data.byte_in[self.HEADERSIZE:])
-                self.Q_messages_received.put(data_received)
-                print("client id " + str(self.player_info.id) + " - info from server: " + data_received.message)
+                message_received = pickle.loads(data.byte_in[self.HEADERSIZE:])
+                self.Q_messages_received.put(message_received)
+                print("client id " + str(self.player_info.id) + " - info from server: " + message_received.message)
+                if message_received.is_message_data():
+                    print("server chose - " + message_received.data)
                 data.byte_in = b""
-                self.run = False
         #  if not recv_data:
         # print(f"Closing connection ")
         # self.sel.unregister(sock)
@@ -76,9 +79,3 @@ class Client:
                     sent = sock.send(data.byte_out)  # Should be ready to write
                     data.byte_out = data.byte_out[sent:]
                     # self.run = True
-
-    def send_info(self, message,data=None):
-        message.set_message_data(data)
-        self.run = True
-        self.Q_messages_send.put(message)
-        self.run_cl()
