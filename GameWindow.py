@@ -9,6 +9,7 @@ import logging
 
 class GameWindow(WindowTemplate):
     font_score = 'Helvetica 14 bold'
+    num_music_loops = 0
 
     def __init__(self, player_id, player_name):
         super().__init__('Client-- Id - ' + str(player_id) + ', Name - ' + player_name, Toplevel())
@@ -43,6 +44,9 @@ class GameWindow(WindowTemplate):
         self.F_main_menu = self.create_main_menu()
         self.F_game = self.create_game_frame()
         self.add_action_to_menubar()
+
+    def mute_background_music(self):
+        super().mute_background_music(1)
 
     def check_if_everybody_choose(self):
         if len(self.player_choice) != 0 and len(self.pc_choice) != 0:
@@ -226,7 +230,7 @@ class GameWindow(WindowTemplate):
         self.C_player.send_info("choose")
         self.action()
         self.click_sound_valid()
-        self.load_background_music('sounds/start.wav', 1)
+        self.load_background_music(1, 'sounds/start.wav', self.num_music_loops)
         logging.info('Player started a new game')
         self.player_info.increase_num_games()
         self.F_main_menu.grid_forget()
@@ -277,7 +281,7 @@ class GameWindow(WindowTemplate):
         reset all variables and show the main menu
         """
         logging.info('Game over, player got back to the main menu')
-        self.load_background_music('sounds/play_again.wav', 1)
+        self.load_background_music(1, 'sounds/play_again.wav', self.num_music_loops)
         self.config_bottom_button('Start', 'normal', lambda: self.start_game())
         self.F_final_result.grid_forget()
         self.show_frame_in_grid(self.F_main_menu)
@@ -314,15 +318,15 @@ class GameWindow(WindowTemplate):
         self.L_final_result_pc_score.configure(text="Pc: " + str(self.pc_score))
         if self.player_score == self.pc_score:
             logging.info('The game ended in a tie')
-            self.load_background_music('sounds/tie.wav', 1)
+            self.load_background_music(1, 'sounds/tie.wav', self.num_music_loops)
             self.L_final_result_img.configure(image=self.images.get("tie"))
         elif self.player_score > self.pc_score:
             logging.info('The player won the game')
-            self.load_background_music('sounds/mixkit-video-game-win-2016.wav', 1)
+            self.load_background_music(1, 'sounds/mixkit-video-game-win-2016.wav', self.num_music_loops)
             self.L_final_result_img.configure(image=self.images.get("win"))
         else:
             logging.info('The player lost the game')
-            self.load_background_music('sounds/mixkit-horror-lose-2028.wav', 1)
+            self.load_background_music(1, 'sounds/mixkit-horror-lose-2028.wav', self.num_music_loops)
             self.L_final_result_img.configure(image=self.images.get("lose"))
 
     def update_title_and_scores(self, result):
@@ -331,16 +335,16 @@ class GameWindow(WindowTemplate):
         """
         self.update_images_choices()
         if result == "tie":
-            self.load_background_music('sounds/tie.wav', 1)
+            self.load_background_music(1, 'sounds/tie.wav', self.num_music_loops)
             self.L_round_result_title.configure(text="It's a tie")
             self.player_info.increase_num_ties()
         elif result == "win":
-            self.load_background_music('sounds/mixkit-video-game-win-2016.wav', 1)
+            self.load_background_music(1, 'sounds/mixkit-video-game-win-2016.wav', self.num_music_loops)
             self.L_round_result_title.configure(text="You won")
             self.player_score = self.player_score + 1
             self.player_info.increase_num_wins()
         elif result == "lose":
-            self.load_background_music('sounds/mixkit-horror-lose-2028.wav', 1)
+            self.load_background_music(1, 'sounds/mixkit-horror-lose-2028.wav', self.num_music_loops)
             self.L_round_result_title.configure(text="You lost")
             self.pc_score = self.pc_score + 1
             self.player_info.increase_num_losses()

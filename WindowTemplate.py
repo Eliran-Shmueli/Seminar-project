@@ -15,10 +15,10 @@ class WindowTemplate:
     font = 'Helvetica 12'
     music_volume = 0.4
 
-    def __init__(self, window_name,window):
+    def __init__(self, window_name, window):
         logging.basicConfig(filename=window_name + '.log', filemode='w', format='%(asctime)s - %(message)s',
                             level=logging.INFO)
-        print('thread id '+str(threading.get_ident()))
+        print('thread id ' + str(threading.get_ident()))
         self.menubar = None
         self.root = window
         self.widgets_dic = {"label": [], "button": [], "listbox": [], "frame": []}
@@ -31,17 +31,16 @@ class WindowTemplate:
         pygame.mixer.init()
         pygame.mixer.music.set_volume(self.music_volume)
 
-    def load_background_music(self, path, loop):
-        pygame.mixer.music.load(path)
-        pygame.mixer.music.play(loop)
+    def load_background_music(self, channel, path, loop):
+        pygame.mixer.Channel(channel).play(pygame.mixer.Sound(path), 0)
 
-    def mute_background_music(self):
+    def mute_background_music(self, channel):
         if self.playing_music is True:
             logging.info('Music turned off')
-            pygame.mixer.music.set_volume(0)
+            pygame.mixer.Channel(channel).set_volume(0)
             self.playing_music = False
         else:
-            pygame.mixer.music.set_volume(self.music_volume)
+            pygame.mixer.Channel(channel).set_volume(self.music_volume)
             logging.info('Music turned on')
             self.playing_music = True
 
@@ -147,10 +146,12 @@ class ListBoxTemp(ttk.Treeview):
         self.frame = Frame(master)
         columns = ('id', 'name')
         style = ttk.Style()
-        style.configure("mystyle.Treeview", highlightthickness=0, bd=0,font=('Calibri', 11))  # Modify the font of the body
+        style.configure("mystyle.Treeview", highlightthickness=0, bd=0,
+                        font=('Calibri', 11))  # Modify the font of the body
         style.configure("mystyle.Treeview.Heading", font=('Calibri', 13, 'bold'))  # Modify the font of the headings
         style.layout("mystyle.Treeview", [('mystyle.Treeview.treearea', {'sticky': 'nswe'})])  # Remove the borders
-        super().__init__(self.frame, height=height, columns=columns, show='headings', selectmode=mode,style="mystyle.Treeview")
+        super().__init__(self.frame, height=height, columns=columns, show='headings', selectmode=mode,
+                         style="mystyle.Treeview")
 
         # link a scrollbar to a list
         scrollbar = Scrollbar(self.frame, orient='vertical', command=self.yview)

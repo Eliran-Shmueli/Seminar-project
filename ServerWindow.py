@@ -6,7 +6,7 @@ import logging
 import threading
 from Server import Server
 import queue
-
+# Music by Lesfm from Pixabay
 
 def start_game_window(player_new):
     x = GameWindow(player_new.id, player_new.name)
@@ -32,11 +32,14 @@ class ServerWindow(WindowTemplate):
         self.dic_players = {}
         self.player_id = 0
         self.root.bind('<Motion>', self.check_queue)
-        # self.load_background_music('sounds/Tenacious D - Master Exploder.wav', -1)
+        self.load_background_music(0,'sounds/energetic-indie-rock-115484.wav', -1)
         self.edit_listbox()
         self.edit_server_window()
         threading.Thread(target=Server(self.Q_server).run).start()
         logging.info('Server window started')
+
+    def mute_background_music(self):
+        super().mute_background_music(0)
 
     def check_queue(self, event):
         if self.Q_server.empty() is False:
