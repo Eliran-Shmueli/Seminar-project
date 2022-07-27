@@ -35,7 +35,7 @@ class ServerWindow(WindowTemplate):
         # self.load_background_music(0,'sounds/energetic-indie-rock-115484.wav', -1)
         self.edit_listbox()
         self.edit_server_window()
-        threading.Thread(target=Server(self.Q_messages_send,self.Q_messages_received, self.dic_players).run).start()
+        threading.Thread(target=Server(self.Q_messages_send, self.Q_messages_received, self.dic_players).run).start()
         self.bind_widgets()
         logging.info('Server window started')
 
@@ -97,17 +97,13 @@ class ServerWindow(WindowTemplate):
         else:
             self.click_sound_error()
 
-    def disconnect_client(self,player_id):
-        message= Message(player_id)
-        message.set_message_exit()
-        key= self.dic_players[player_id].socket
-        self.Q_messages_send.put((key,message))
-
     def delete_all_players_from_listbox(self):
         if len(self.listbox.get_children()) != 0:
             self.click_sound_valid()
             for player_index in self.listbox.get_children():
                 self.listbox.delete(player_index)
+            for player_id in self.dic_players.keys():
+                self.disconnect_client(player_id)
             self.dic_players = {}
         else:
             self.click_sound_error()
@@ -118,6 +114,12 @@ class ServerWindow(WindowTemplate):
             player_index_id = self.listbox.item(player_index).get("values")[0]
             if player_index_id == player_id:
                 self.listbox.delete(player_index)
+
+    def disconnect_client(self, player_id):
+        message = Message(player_id)
+        message.set_message_exit()
+        key = self.dic_players[player_id].socket
+        self.Q_messages_send.put((key, message))
 
     def edit_server_window(self):
         # creating widgets
