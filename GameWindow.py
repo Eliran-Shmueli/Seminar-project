@@ -49,14 +49,14 @@ class GameWindow(WindowTemplate):
             self.config_bottom_button(state="normal")
 
     def action(self):
-        message_received = self.C_player.Q_messages_received.get(block=True)
-        if message_received == self.C_player.dict_messages[1]:  # ready
+        dict_message_received = self.C_player.Q_messages_received.get(block=True)
+        if dict_message_received["message"] == self.C_player.dict_messages[1]:  # ready
             self.config_bottom_button("start", 'normal', lambda: self.start_game())
-        if message_received in {"rock", "paper", "scissors"}:  # server choose
-            self.pc_choice = message_received
+        if dict_message_received["message"] in {"rock", "paper", "scissors"}:  # server choose
+            self.pc_choice = dict_message_received["message"]
             self.L_pc_pick.configure(text="pc chose")
             self.check_if_everybody_choose()
-        if message_received == self.C_player.dict_messages[4]:  # exit
+        if dict_message_received["message"] == self.C_player.dict_messages[4]:  # exit
             super().exit_app()
 
     def show_frame_in_grid(self, frame):
@@ -461,5 +461,5 @@ class GameWindow(WindowTemplate):
         self.L_round_result_player_choice_img.configure(image=self.images.get(self.image_type + self.player_choice))
 
     def exit_app(self):
-        self.C_player.send_info(self.C_player.dict_messages[3] + " " + str(self.player_info.id))  # exit
+        self.C_player.send_info(self.C_player.dict_messages[3])  # exit
         self.action()

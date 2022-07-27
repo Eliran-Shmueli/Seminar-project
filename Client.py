@@ -12,10 +12,11 @@ class Client:
     def __init__(self, player_info):
         host = socket.gethostname()
         port = 1231
-        self.dict_messages = {0: "id", 1: "ready", 2: "choose",3:"exit",4:"bye"}
+        self.dict_messages = {0: "connected", 1: "ready", 2: "choose", 3: "exit", 4: "goodbye"}
+        self.dict_message_struct = {"id": player_info.id, "message": self.dict_messages[0], "num_data": 0, "data": None}
         self.Q_messages_received = queue.Queue()
-        self.Q_messages_send =queue.Queue()
-        self.Q_messages_send.put(self.dict_messages[0] + " " + str(player_info.id))
+        self.Q_messages_send = queue.Queue()
+        self.Q_messages_send.put(self.dict_message_struct)
         self.sel = selectors.DefaultSelector()
         self.player_info = player_info
 
@@ -61,8 +62,8 @@ class Client:
                 data.inb += recv_data
                 data_received = pickle.loads(data.inb[self.HEADERSIZE:])
                 self.Q_messages_received.put(data_received)
-                print("client id " + str(self.player_info.id) + " - info from server: " + data_received)
-                data.inb=b""
+                print("client id " + str(self.player_info.id) + " - info from server: " + data_received["message"])
+                data.inb = b""
                 self.run = False
         #  if not recv_data:
         # print(f"Closing connection ")
@@ -78,7 +79,13 @@ class Client:
                     data.outb = data.outb[sent:]
                     # self.run = True
 
-    def send_info(self, data):
+    def send_info(self, message,data=None):
+        self.dict_message_struct["message"]=message
+        self.dict_message_struct["data"] = data
+        if data is not None:
+            self.dict_message_struct["num_data"]=1
+        else:
+            self.dict_message_struct["num_data"] = 0
         self.run = True
-        self.Q_messages_send.put(data)
+        self.Q_messages_send.put(self.dict_message_struct)
         self.run_cl()

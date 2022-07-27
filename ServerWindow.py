@@ -41,8 +41,9 @@ class ServerWindow(WindowTemplate):
     def check_queue(self, event):
         if self.Q_server.empty() is False:
             message = self.Q_server.get()
-            if message[0:4] == "exit":
-                self.delete_player_by_id(int(message[5:]))
+            if message["message"] == "exit":
+                pass
+               # self.delete_player_by_id(message["id"])
 
     def edit_listbox(self):
         self.listbox.heading('id', text='Player id', anchor=W, )

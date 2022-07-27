@@ -6,6 +6,7 @@ import logging
 import random
 import queue
 
+
 def computer_pick():
     """generate random option for the computer"""
     choice = random.choice(["rock", "paper", "scissors"])
@@ -16,14 +17,15 @@ def computer_pick():
 class Server:
     HEADERSIZE = 10
 
-    def __init__(self,queue):
-        self.Q_server=queue
+    def __init__(self, queue):
+        self.Q_server = queue
         self.sel = selectors.DefaultSelector()
         self.host = socket.gethostname()
         self.port = 1231
         self.full_msg = b''
         self.dict_clients = {}
-        self.dict_messages = {0: "id", 1: "ready",  2: "choose",3:"exit",4:"bye"}
+        self.dict_messages = {0: "connected", 1: "ready", 2: "choose", 3: "exit", 4: "goodbye"}
+        self.dict_message_struct = {"id": -1, "message": self.dict_messages[0], "num_data": 0, "data": None}
 
     def run(self):
         lsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -43,8 +45,8 @@ class Server:
                         self.service_connection(key, mask)
         except KeyboardInterrupt:
             print("sever - Caught keyboard interrupt, exiting")
-        #finally:
-           # self.sel.close()
+        # finally:
+        # self.sel.close()
 
     def accept_wrapper(self, sock):
         socket_connected, addr = sock.accept()  # Should be ready to read
@@ -62,14 +64,14 @@ class Server:
             if recv_data:
                 data.inb += recv_data
                 data_received = pickle.loads(data.inb[self.HEADERSIZE:])
-                print("sever - info from client " + data_received)
+                print("sever - info from client " + data_received["message"])
                 self.actions(data_received, key, mask)
-                data.inb=b''
+                data.inb = b''
 
-           # else:
-               # print(f"sever - Closing connection to {data.addr}")
-               # self.sel.unregister(sock)
-               # sock.close()
+        # else:
+        # print(f"sever - Closing connection to {data.addr}")
+        # self.sel.unregister(sock)
+        # sock.close()
         if mask & selectors.EVENT_WRITE:
 
             if data.outb:
@@ -78,16 +80,17 @@ class Server:
                 data.outb = b''
 
     def actions(self, data_received, key, mask):
-        if data_received[0:2] == self.dict_messages[0]: # id
-           # id = data_received[3:]
-            # self.dict_clients[id] = (key, mask)
-            self.append_message(key.data,self.dict_messages[1])
-        if data_received==self.dict_messages[2]: # choose
-            self.append_message(key.data,computer_pick())
-        if data_received[0:4] == self.dict_messages[3]:  # exit
-            self.append_message(key.data, self.dict_messages[4])
+        if data_received["message"] == self.dict_messages[0]:  # connected
+            self.dict_message_struct["message"] = self.dict_messages[1]
+            self.append_message(key.data, self.dict_message_struct)
+        if data_received["message"] == self.dict_messages[2]:  # choose
+            self.dict_message_struct["message"] = computer_pick()
+            self.append_message(key.data, self.dict_message_struct)
+        if data_received["message"] == self.dict_messages[3]:  # exit
+            print("hello")
+            self.dict_message_struct["message"] = self.dict_messages[4]
+            self.append_message(key.data, self.dict_message_struct)
             self.Q_server.put(data_received)
-
 
     def append_message(self, data, message):
         data.outb = pickle.dumps(message)
