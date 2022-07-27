@@ -1,4 +1,3 @@
-import queue
 from Client import Client
 from WindowTemplate import WindowTemplate
 from tkinter import *
@@ -7,6 +6,7 @@ from Player import Player
 import logging
 from Message import Message
 import threading
+
 
 class GameWindow(WindowTemplate):
     font_score = 'Helvetica 14 bold'
@@ -41,7 +41,8 @@ class GameWindow(WindowTemplate):
         self.B_scissors = None
         self.B_bottom = self.init_bottom_button()
         self.message.set_message_connected()
-        threading.Thread(target=lambda :Client(self.player_info, self.message,self.Q_messages_send,self.Q_messages_received)).start()
+        threading.Thread(target=lambda: Client(self.player_info, self.message, self.Q_messages_send,
+                                               self.Q_messages_received)).start()
         self.F_round_result = self.create_round_result_frame()
         self.F_final_result = self.create_final_result_frame()
         self.F_main_menu = self.create_main_menu()
@@ -59,12 +60,12 @@ class GameWindow(WindowTemplate):
             else:
                 self.Q_messages_received.put(message)
 
-    def send_info(self, message,data=None):
+    def send_info(self, message, data=None):
         message.set_message_data(data)
         self.Q_messages_send.put(message)
 
-    def mute_background_music(self):
-        super().mute_background_music(1)
+    def mute_background_music(self, channel=1):
+        super().mute_background_music(channel)
 
     def check_if_everybody_choose(self):
         if len(self.player_choice) != 0 and len(self.pc_choice) != 0:
@@ -96,7 +97,7 @@ class GameWindow(WindowTemplate):
         :return: button
         """
         self.root.configure(pady=self.pad_y)
-        B_bottom = Button(self.root, font=self.font_score, width=10, height=2, state="disable")
+        B_bottom = Button(self.root, font=self.font_score, width=10, height=2, state="disabled")
         B_bottom.grid(row=1, column=0)
         self.add_widgets(B_bottom)
         return B_bottom
@@ -146,7 +147,8 @@ class GameWindow(WindowTemplate):
         """
         # create widgets
         F_scores = Frame(F_game)
-        self.L_player_score = Label(F_scores, text=self.player_info.name+": " + str(self.player_score), font=self.font_score)
+        self.L_player_score = Label(F_scores, text=self.player_info.name + ": " + str(self.player_score),
+                                    font=self.font_score)
         self.L_pc_score = Label(F_scores, text="Pc: " + str(self.pc_score), font=self.font_score)
         # put in order
         self.L_player_score.pack(side=LEFT, padx=self.pad_x)
@@ -316,7 +318,7 @@ class GameWindow(WindowTemplate):
         """
         updates the labels of round and scores
         """
-        self.L_player_score.configure(text=self.player_info.name+": " + str(self.player_score))
+        self.L_player_score.configure(text=self.player_info.name + ": " + str(self.player_score))
         self.L_pc_score.configure(text="Pc: " + str(self.pc_score))
         self.L_title.configure(text="Round: " + str(self.round_count))
 
@@ -335,7 +337,7 @@ class GameWindow(WindowTemplate):
         """
         updates the titles and image at the final result frame, according to the scores
         """
-        self.L_final_result_player_score.configure(text=self.player_info.name+": " + str(self.player_score))
+        self.L_final_result_player_score.configure(text=self.player_info.name + ": " + str(self.player_score))
         self.L_final_result_pc_score.configure(text="Pc: " + str(self.pc_score))
         if self.player_score == self.pc_score:
             logging.info('The game ended in a tie')

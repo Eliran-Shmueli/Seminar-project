@@ -1,6 +1,5 @@
 import queue
 import threading
-import tkinter as tk
 from tkinter.colorchooser import askcolor
 from tkinter import *
 import winsound
@@ -126,7 +125,7 @@ creates and commands to it
         color = askcolor()[1]
         logging.info('The text color was changed to ' + color)
         for key in self.widgets_dic.keys():
-            if key != "frame":
+            if key != "frame" and key != "listbox":
                 for widget in self.widgets_dic[key]:
                     widget.configure(fg=color)
 

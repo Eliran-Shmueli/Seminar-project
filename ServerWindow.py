@@ -1,6 +1,5 @@
 # Music by Lesfm from Pixabay
 from tkinter import messagebox
-
 from WindowTemplate import WindowTemplate, ListBoxTemp
 from GameWindow import GameWindow
 from tkinter import *
@@ -8,7 +7,6 @@ from Player import Player
 import logging
 import threading
 from Server import Server
-import queue
 from Message import Message
 
 
@@ -27,7 +25,7 @@ def create_player_thread(player_new):
 class ServerWindow(WindowTemplate):
     pad_y = 10
     pad_x = 10
-    name_length=12
+    name_length = 12
 
     def __init__(self, window_name):
         super().__init__(window_name, Tk())
@@ -84,17 +82,18 @@ class ServerWindow(WindowTemplate):
             logging.info('Player ' + "Id: " + str(self.player_id) + ", Name: " + name + ' was added')
             E_playerName.delete(0, 'end')
         else:
-            messagebox.showerror('R.P.S - Server', 'Error: Name can be only with letters, no spaces and in max length of 12')
+            messagebox.showerror('R.P.S - Server',
+                                 'Error: Name can be only with letters, no spaces and in max length of 12')
             self.click_sound_error()
 
     def delete_selected_player_from_listbox(self):
         self.click_sound_valid()
         selected_player = self.listbox.selection()
         if selected_player:
-            player_info = self.listbox.item(selected_player).get("values")
+            player_info = self.listbox.item(selected_player[0]).get("values")
             player_id = player_info[0]
             player_name = player_info[1]
-            self.listbox.delete(selected_player)
+            self.listbox.delete(selected_player[0])
             self.disconnect_client(player_id)
             del self.dic_players[player_id]
             logging.info('Player id: ' + str(player_id) + ', name: ' + player_name + 'was disconnected')

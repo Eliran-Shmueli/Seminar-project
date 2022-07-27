@@ -5,7 +5,6 @@ import pickle
 import logging
 import random
 from Message import Message
-import queue
 
 
 def computer_pick():
@@ -39,8 +38,8 @@ class Server:
         try:
             while True:
                 while self.Q_messages_send.empty() is False:
-                    key,message = self.Q_messages_send.get()
-                    self.append_message(key.data,message)
+                    key, message = self.Q_messages_send.get()
+                    self.append_message(key.data, message)
                 events = self.sel.select(timeout=1)
                 for key, mask in events:
                     if key.data is None:
@@ -69,7 +68,7 @@ class Server:
                 data.byte_in += recv_data
                 message_received = pickle.loads(data.byte_in[self.HEADERSIZE:])
                 print("sever - info from client " + message_received.message)
-                self.actions(message_received, key, mask)
+                self.actions(message_received, key)
                 data.byte_in = b''
 
         # else:
@@ -83,7 +82,7 @@ class Server:
                 data.byte_out = data.byte_out[sent:]
                 data.byte_out = b''
 
-    def actions(self, message_received, key, mask):
+    def actions(self, message_received, key):
         if message_received.is_message_goodbye():
             print("client id " + str(message_received.id) + " has exit")
             print(f"sever - Closing connection to {key.data.addr}")
@@ -91,8 +90,8 @@ class Server:
             key.fileobj.close()
         else:
             if message_received.is_message_connected():
-                player_id= message_received.id
-                self.dic_players[player_id].socket=key
+                player_id = message_received.id
+                self.dic_players[player_id].socket = key
                 self.message.set_message_ready()
             if message_received.is_message_choose():
                 self.message.set_message_data(computer_pick())

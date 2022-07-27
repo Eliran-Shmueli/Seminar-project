@@ -1,10 +1,7 @@
-import sys
 import socket
 import selectors
 import types
 import pickle
-import queue
-from Message import Message
 
 
 class Client:
@@ -48,7 +45,6 @@ class Client:
         sock.setblocking(False)
         sock.connect_ex(server_addr)
         events = selectors.EVENT_READ | selectors.EVENT_WRITE
-        data = types.SimpleNamespace(byte_in=b"", byte_out=b"")
         data = types.SimpleNamespace(byte_in=b"", byte_out=b"")
         self.sel.register(sock, events, data=data)
 
