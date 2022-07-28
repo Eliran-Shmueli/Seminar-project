@@ -1,4 +1,5 @@
 # Music by Lesfm from Pixabay
+import multiprocessing
 from tkinter import messagebox
 from WindowTemplate import WindowTemplate, ListBoxTemp
 from GameWindow import GameWindow
@@ -12,14 +13,11 @@ from Message import Message
 
 def start_game_window(player_new):
     x = GameWindow(player_new.id, player_new.name)
-    try:
-        x.root.mainloop()
-    except:
-        pass
+    x.root.mainloop()
 
 
-def create_player_thread(player_new):
-    threading.Thread(target=start_game_window, args=(player_new,)).start()
+def create_player_process(player_new):
+    multiprocessing.Process(target=start_game_window, args=(player_new,)).start()
 
 
 class ServerWindow(WindowTemplate):
@@ -77,7 +75,7 @@ class ServerWindow(WindowTemplate):
             self.player_id = self.player_id + 1
             player_new = Player(self.player_id, name)
             self.dic_players[self.player_id] = player_new
-            create_player_thread(player_new)
+            create_player_process(player_new)
             self.listbox.insert('', END, values=(self.player_id, name))
             logging.info('Player ' + "Id: " + str(self.player_id) + ", Name: " + name + ' was added')
             E_playerName.delete(0, 'end')
