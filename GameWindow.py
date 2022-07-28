@@ -253,7 +253,7 @@ class GameWindow(WindowTemplate):
         self.send_info(self.message)
         self.actions()
         self.click_sound_valid()
-        self.load_background_music(1, 'sounds/start.wav', self.num_music_loops)
+        self.load_background_music(0, 'sounds/start.wav', self.num_music_loops)
         logging.info('Player started a new game')
         self.player_info.increase_num_games()
         self.F_main_menu.grid_forget()

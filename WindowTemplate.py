@@ -14,7 +14,7 @@ class WindowTemplate:
     title_font = 'Helvetica 20 underline bold'
     font = 'Helvetica 12'
     music_volume = 0.4
-    num_of_channels = 2
+    num_of_channels = 1
 
     def __init__(self, window_name):
         logging.basicConfig(filename=window_name + '.log', filemode='w', format='%(asctime)s - %(message)s',
@@ -36,7 +36,8 @@ class WindowTemplate:
             pygame.mixer.Channel(channel_num).set_volume(self.music_volume)
 
     def load_background_music(self, channel, path, loop):
-        pygame.mixer.Channel(channel).play(pygame.mixer.Sound(path), 0)
+        self.channel=channel
+        pygame.mixer.Channel(self.channel).play(pygame.mixer.Sound(path), loop)
 
     def mute_background_music(self, channel):
         if self.playing_music is True:
@@ -53,6 +54,9 @@ class WindowTemplate:
 
     def click_sound_error(self):
         winsound.PlaySound('sounds/mixkit-click-error-1110.wav', winsound.SND_FILENAME | winsound.SND_ASYNC)
+
+    def click_sound_exit(self):
+        winsound.PlaySound('sounds/sci-fi-voiceclip-894-sound-effect-goodbye.wav', winsound.SND_FILENAME | winsound.SND_ASYNC)
 
     def edit_template(self, window_name):
         """
@@ -103,8 +107,9 @@ creates and commands to it
         )
 
     def exit_app(self):
-        self.click_sound_valid()
+        self.click_sound_exit()
         logging.info('Exit program')
+        pygame.mixer.quit()
         self.root.destroy()
 
     def change_buttons_color(self):
