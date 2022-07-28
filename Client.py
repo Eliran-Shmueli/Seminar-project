@@ -7,14 +7,14 @@ import pickle
 class Client:
     HEADERSIZE = 10
 
-    def __init__(self, player_info, message, Q_messages_send, Q_messages_received):
+    def __init__(self, player_info, Q_messages_send, Q_messages_received, is_client_init=False):
         host = socket.gethostname()
         port = 1231
+        self.is_client_init = is_client_init
         self.player_info = player_info
         self.Q_messages_received = Q_messages_received
         self.Q_messages_send = Q_messages_send
         self.sel = selectors.DefaultSelector()
-        self.Q_messages_send.put(message)
         self.run = True
         self.output_send = None
         self.start_connections(host, port)

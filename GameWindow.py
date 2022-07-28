@@ -12,13 +12,11 @@ class GameWindow(WindowTemplate):
     font_score = 'Helvetica 14 bold'
     num_music_loops = 0
 
-    def __init__(self, player_id, player_name):
+    def __init__(self, player_id=-2, player_name=""):
         super().__init__('Client-- Id - ' + str(player_id) + ', Name - ' + player_name)
-        self.L_pc_pick = None
-        logging.info('Game window started')
-        self.image_type = "animated_"
         self.player_info = Player(player_id, player_name)
-        self.message = Message(self.player_info.id)
+        self.image_type = "animated_"
+        self.message = None
         self.round_count = 1
         self.player_score = 0
         self.pc_score = 0
@@ -26,6 +24,11 @@ class GameWindow(WindowTemplate):
         self.pc_choice = None
         self.images = {}
         self.load_all_images()
+        self.F_game = None
+        self.F_main_menu = None
+        self.F_final_result = None
+        self.F_round_result = None
+        self.L_pc_pick = None
         self.L_final_result_img = None
         self.L_round_result_pc_choice_img = None
         self.L_round_result_player_choice_img = None
@@ -39,16 +42,69 @@ class GameWindow(WindowTemplate):
         self.B_rock = None
         self.B_paper = None
         self.B_scissors = None
+        self.B_bottom = None
+        self.message = Message(self.player_info.id)
+        self.init_frames()
+        self.check_info(player_name)
+        print("test")
+
+    def check_info(self, player_name):
+        if len(player_name) == 0:
+            self.root.bind('<Motion>', self.check_queue_received)
+            self.create_add_player_frame()
+            self.F_addPlayer.grid(row=1, column=0)
+            self.B_bottom.grid_forget()
+            self.init_run()
+        else:
+            self.message.set_message_connected()
+            self.init_client_server()
+            self.send_info(self.message)
+            self.init_run()
+
+    def add_new_player(self, name):
+        self.player_info.name = name
+        self.message.set_message_connect_to_server()
+        self.init_client_server()
+        self.send_info(self.message, self.player_info.name)
+
+    def init_frames(self):
+        """
+        init,creates frames
+        adds menubar and button to root
+        """
         self.B_bottom = self.init_bottom_button()
-        self.message.set_message_connected()
-        threading.Thread(target=lambda: Client(self.player_info, self.message, self.Q_messages_send,
-                                               self.Q_messages_received)).start()
+        self.F_main_menu = self.create_main_menu()
         self.F_round_result = self.create_round_result_frame()
         self.F_final_result = self.create_final_result_frame()
-        self.F_main_menu = self.create_main_menu()
         self.F_game = self.create_game_frame()
         self.add_action_to_menubar()
+
+    def init_bottom_button(self):
+        """
+        init and config the button at the bottom of the grid
+        :return: button
+        """
+        self.root.configure(pady=self.pad_y)
+        B_bottom = Button(self.root, font=self.font_score, width=10, height=2, state="disabled")
+        B_bottom.grid(row=1, column=0)
+        self.add_widgets(B_bottom)
+        return B_bottom
+
+    def init_client_server(self):
+        """
+        init message and thread, set message to "connected"
+        """
+
+        threading.Thread(target=lambda: Client(self.player_info, self.Q_messages_send,
+                                               self.Q_messages_received, True)).start()
+
+    def init_run(self):
+        """
+        adds bottom button to root, bind widgets and start mainloop
+        """
         self.bind_widgets()
+        self.root.mainloop()
+        logging.info('Game window started')
 
     def check_queue_received(self, event):
         if self.Q_messages_received.empty() is False:
@@ -58,10 +114,10 @@ class GameWindow(WindowTemplate):
                 self.send_info(message)
                 super().exit_app()
             else:
-                self.Q_messages_received.put(message)
+                self.actions(message)
 
     def send_info(self, message, data=None):
-        message.set_message_data(data)
+        message.add_data_to_message(data)
         self.Q_messages_send.put(message)
 
     def mute_background_music(self, channel=1):
@@ -71,11 +127,13 @@ class GameWindow(WindowTemplate):
         if len(self.player_choice) != 0 and len(self.pc_choice) != 0:
             self.config_bottom_button(state="normal")
 
-    def actions(self):
-        message_received = self.Q_messages_received.get(block=True)
+    def actions(self,message_received):
+        if message_received.is_message_connected():
+            self.player_info.id = message_received.id
+            print(self.player_info.id)
         if message_received.is_message_ready():
             self.config_bottom_button("start", 'normal', lambda: self.start_game())
-        if message_received.is_message_data():
+        if message_received.is_message_choose():
             self.pc_choice = message_received.data
             self.L_pc_pick.configure(text="pc chose")
             self.check_if_everybody_choose()
@@ -90,17 +148,6 @@ class GameWindow(WindowTemplate):
         :param frame: selected frame
         """
         frame.grid(row=0, column=0, pady=self.pad_y)
-
-    def init_bottom_button(self):
-        """
-        init and config the button at the bottom of the grid
-        :return: button
-        """
-        self.root.configure(pady=self.pad_y)
-        B_bottom = Button(self.root, font=self.font_score, width=10, height=2, state="disabled")
-        B_bottom.grid(row=1, column=0)
-        self.add_widgets(B_bottom)
-        return B_bottom
 
     def config_bottom_button(self, text='', state='', func=None):
         """
@@ -123,7 +170,6 @@ class GameWindow(WindowTemplate):
         """
         # create widgets
         F_main_menu = Frame(self.root)
-        self.actions()
         # adding image
         img_main_menu = PhotoImage(file=r"images/event-featured-the-legend-of-rock-paper-scissors-1634241914.png")
         img_main_menu = img_main_menu.subsample(2, 2)
@@ -251,7 +297,6 @@ class GameWindow(WindowTemplate):
         self.reset_choices()
         self.message.set_message_choose()
         self.send_info(self.message)
-        self.actions()
         self.click_sound_valid()
         self.load_background_music(0, 'sounds/start.wav', self.num_music_loops)
         logging.info('Player started a new game')
@@ -291,7 +336,6 @@ class GameWindow(WindowTemplate):
             self.config_bottom_button("Go!!!", 'disabled', lambda: self.play_game())
             self.message.set_message_choose()
             self.send_info(self.message)
-            self.actions()
             self.update_scores_and_round_labels()
             self.F_round_result.grid_forget()
             self.show_frame_in_grid(self.F_game)
@@ -491,4 +535,11 @@ class GameWindow(WindowTemplate):
     def exit_app(self):
         self.message.set_message_exit()
         self.send_info(self.message)  # exit
-        self.actions()
+
+
+def main_GameWindow():
+    GameWindow()
+
+
+if __name__ == "__main__":
+    main_GameWindow()

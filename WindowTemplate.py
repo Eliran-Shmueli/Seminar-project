@@ -5,7 +5,8 @@ from tkinter import *
 import winsound
 import logging
 import pygame
-from tkinter import ttk
+from tkinter import ttk, messagebox
+from Player import Player
 
 
 class WindowTemplate:
@@ -15,6 +16,7 @@ class WindowTemplate:
     font = 'Helvetica 12'
     music_volume = 0.4
     num_of_channels = 1
+    name_length = 12
 
     def __init__(self, window_name):
         logging.basicConfig(filename=window_name + '.log', filemode='w', format='%(asctime)s - %(message)s',
@@ -26,6 +28,7 @@ class WindowTemplate:
         self.Q_messages_send = queue.Queue()
         self.widgets_dic = {"label": [], "button": [], "listbox": [], "frame": []}
         self.playing_music = True
+        self.F_addPlayer = None
         self.init_background_music()
         self.edit_template(window_name)
         self.add_widgets(self.root)
@@ -153,7 +156,36 @@ creates and commands to it
             for widget in self.widgets_dic[key]:
                 widget.bind('<Motion>', self.check_queue_received)
 
+    def create_add_player_frame(self):
+        self.F_addPlayer = Frame(self.root)
+        L_addPlayer = Label(self.F_addPlayer, text="Player name:", font=self.font, padx=self.pad_x)
+        E_playerName = Entry(self.F_addPlayer, font=self.font)
+        B_addPlayer = Button(self.F_addPlayer, text='add player', font=self.font,
+                             command=lambda: self.set_player_name(E_playerName))
+
+        # place in F_addPlayer
+        L_addPlayer.pack(side=LEFT)
+        E_playerName.pack(side=LEFT)
+        B_addPlayer.pack(side=LEFT, padx=self.pad_x)
+
+        # add to widgets list
+        self.add_widgets(B_addPlayer, L_addPlayer, E_playerName, self.F_addPlayer)
+
+    def set_player_name(self, E_playerName):
+        name = E_playerName.get()
+        if (len(name) != 0) and (name.isalpha() and (len(name) <= self.name_length)):
+            self.click_sound_valid()
+            E_playerName.delete(0, 'end')
+            self.add_new_player(name)
+        else:
+            self.click_sound_error()
+            messagebox.showerror('R.P.S - Server',
+                                 'Error: Name can be only with letters, no spaces and in max length of 12')
+
     def check_queue_received(self, event):
+        pass
+
+    def add_new_player(self, name):
         pass
 
 

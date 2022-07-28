@@ -78,6 +78,7 @@ class Server:
         if mask & selectors.EVENT_WRITE:
 
             if data.byte_out:
+                print("test 6")
                 sent = sock.send(data.byte_out)  # Should be ready to write
                 data.byte_out = data.byte_out[sent:]
                 data.byte_out = b''
@@ -88,18 +89,24 @@ class Server:
             print(f"sever - Closing connection to {key.data.addr}")
             self.sel.unregister(key.fileobj)
             key.fileobj.close()
+
+        elif message_received.is_message_connect_to_server():
+            print("test")
+            self.Q_messages_received.put((key, message_received))
         else:
             if message_received.is_message_connected():
                 player_id = message_received.id
                 self.dic_players[player_id].socket = key
                 self.message.set_message_ready()
             if message_received.is_message_choose():
-                self.message.set_message_data(computer_pick())
+                self.message.set_message_choose()
+                self.message.add_data_to_message(computer_pick())
             if message_received.is_message_exit():
                 self.message.set_message_goodbye()
-                self.Q_messages_received.put(message_received)
+                self.Q_messages_received.put((key,message_received))
             self.append_message(key.data, self.message)
 
     def append_message(self, data, message):
+        print("test 4")
         data.byte_out = pickle.dumps(message)
         data.byte_out = bytes(f"{len(data.byte_out):<{self.HEADERSIZE}}", 'utf-8') + data.byte_out
