@@ -13,7 +13,7 @@ class GameWindow(WindowTemplate):
     num_music_loops = 0
 
     def __init__(self, player_id, player_name):
-        super().__init__('Client-- Id - ' + str(player_id) + ', Name - ' + player_name, Tk())
+        super().__init__('Client-- Id - ' + str(player_id) + ', Name - ' + player_name)
         self.L_pc_pick = None
         logging.info('Game window started')
         self.image_type = "animated_"

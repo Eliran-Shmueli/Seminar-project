@@ -26,7 +26,7 @@ class ServerWindow(WindowTemplate):
     name_length = 12
 
     def __init__(self, window_name):
-        super().__init__(window_name, Tk())
+        super().__init__(window_name)
         self.server = None
         self.listbox = ListBoxTemp(self.root, 6, 'browse')
         self.dic_players = {}

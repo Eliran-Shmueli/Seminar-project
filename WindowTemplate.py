@@ -16,12 +16,12 @@ class WindowTemplate:
     music_volume = 0.4
     num_of_channels = 2
 
-    def __init__(self, window_name, window):
+    def __init__(self, window_name):
         logging.basicConfig(filename=window_name + '.log', filemode='w', format='%(asctime)s - %(message)s',
                             level=logging.INFO)
         print('thread id ' + str(threading.get_ident()))
         self.menubar = None
-        self.root = window
+        self.root = Tk()
         self.Q_messages_received = queue.Queue()
         self.Q_messages_send = queue.Queue()
         self.widgets_dic = {"label": [], "button": [], "listbox": [], "frame": []}
