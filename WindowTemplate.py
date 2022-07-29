@@ -7,8 +7,7 @@ import logging
 import pygame
 from tkinter import ttk, messagebox
 from event_scheduler import EventScheduler
-
-
+import time
 
 class WindowTemplate:
     pad_x = 20
@@ -29,7 +28,8 @@ class WindowTemplate:
         self.Q_messages_send = queue.Queue()
         self.widgets_dic = {"label": [], "button": [], "listbox": [], "frame": []}
         self.playing_music = True
-        self.event=threading.Event()
+        self.run_call = True
+        self.event = threading.Event()
         logging.basicConfig(filename=window_name + '.log', filemode='w', format='%(asctime)s - %(message)s',
                             level=logging.INFO)
         print('thread id ' + str(threading.get_ident()))
@@ -40,7 +40,7 @@ class WindowTemplate:
     def start_event_scheduler(self):
         self.event_scheduler = EventScheduler()
         self.event_scheduler.start()
-        self.event_id=self.event_scheduler.enter_recurring(1, 0, self.check_queue_received)
+        self.event_id = self.event_scheduler.enter_recurring(1, 0, self.check_queue_received)
 
     def clear_dict_widgets(self):
         self.widgets_dic = {"label": [], "button": [], "listbox": [], "frame": []}
@@ -127,9 +127,10 @@ creates and commands to it
 
     def exit_app(self):
         self.click_sound_exit()
+        time.sleep(1)
         logging.info('Exit program')
         pygame.mixer.quit()
-        self.root.destroy()
+        self.root.quit()
 
     def change_buttons_color(self):
         color = askcolor()[1]
@@ -199,6 +200,10 @@ creates and commands to it
 
     def add_new_player(self, name):
         pass
+
+    def call_after_func(self):
+        if self.run_call is True:
+            self.root.after(1000, self.check_queue_received)
 
 
 class ListBoxTemp(ttk.Treeview):

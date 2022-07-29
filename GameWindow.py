@@ -1,5 +1,4 @@
 from Client import Client
-from GifLabel import GifLabel
 from WindowTemplate import WindowTemplate
 from tkinter import *
 from PIL import ImageTk, Image
@@ -43,7 +42,8 @@ class GameWindow(WindowTemplate):
         self.B_paper = None
         self.B_scissors = None
         self.B_bottom = None
-        self.start_event_scheduler()
+        # self.start_event_scheduler()
+        self.call_after_func()
         self.message = Message(self.player_info.id)
         self.check_info()
 
@@ -97,9 +97,11 @@ class GameWindow(WindowTemplate):
         logging.info('Game window started')
 
     def check_queue_received(self):
+        print("test")
         if self.Q_messages_received.empty() is False:
             message = self.Q_messages_received.get()
             self.actions(message)
+        self.call_after_func()
 
     def send_info(self, message, data=None):
         message.add_data_to_message(data)
@@ -113,10 +115,10 @@ class GameWindow(WindowTemplate):
             self.config_bottom_button(state="normal")
 
     def actions(self, message_received):
-
         if message_received.is_message_exit():
-            message_received.set_message_goodbye()
-            self.send_info(message_received)
+            self.message.set_message_goodbye()
+            self.send_info(self.message)
+            self.run_call=False
             self.event.set()
             super().exit_app()
         if message_received.is_message_ready():
@@ -128,6 +130,8 @@ class GameWindow(WindowTemplate):
         if message_received.is_message_goodbye():
             self.message.set_message_goodbye()
             self.send_info(self.message)
+            self.run_call=False
+            self.event.set()
             super().exit_app()
 
     def show_frame_in_grid(self, frame):

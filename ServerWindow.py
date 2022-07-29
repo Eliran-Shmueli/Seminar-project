@@ -15,9 +15,6 @@ from Server import Server
 from Message import Message
 
 
-
-
-
 class ServerWindow(WindowTemplate):
     pad_y = 10
     pad_x = 10
@@ -31,16 +28,15 @@ class ServerWindow(WindowTemplate):
         self.load_background_music(0, 'sounds/best-time-112194.wav', -1)
         self.edit_listbox()
         self.edit_server_window()
-        self.T_server= threading.Thread(target=Server(self.Q_messages_send, self.Q_messages_received, self.dic_players,self.event).run)
+        self.T_server = threading.Thread(
+            target=Server(self.Q_messages_send, self.Q_messages_received, self.dic_players, self.event).run)
         self.T_server.start()
-        self.start_event_scheduler()
-        self.p=None
+        # self.start_event_scheduler()
+        self.call_after_func()
+        self.p = None
         logging.info('Server window started')
 
-
-
-
-    def add_new_player(self, name,is_client_init = False):
+    def add_new_player(self, name, is_client_init=False):
         self.player_id_count = self.player_id_count + 1
         player_new = Player(self.player_id_count, name)
         self.dic_players[self.player_id_count] = player_new
@@ -54,13 +50,16 @@ class ServerWindow(WindowTemplate):
         super().mute_background_music(0)
 
     def check_queue_received(self):
+
         if self.Q_messages_received.empty() is False:
             key, message = self.Q_messages_received.get()
             if message.is_message_exit():
                 self.delete_player_by_id(message.id)
 
-    def accept_request_to_connect_from_client(self,key,message):
-        new_player_id = self.add_new_player(message.data,True)
+        self.call_after_func()
+
+    def accept_request_to_connect_from_client(self, key, message):
+        new_player_id = self.add_new_player(message.data, True)
         message_to_send = Message(new_player_id)
         message_to_send.set_message_connected()
         self.dic_players[new_player_id].socket = key
@@ -110,7 +109,7 @@ class ServerWindow(WindowTemplate):
 
     def edit_server_window(self):
         # creating widgets
-        F_addPlayer=self.create_add_player_frame()
+        F_addPlayer = self.create_add_player_frame()
         L_title = Label(self.root, text="R.P.S - Server", font=self.title_font)
         L_gif = GifLabel(self.root)
         B_disconnectPlayer = Button(self.root, text='Disconnect a player', font=self.font,
@@ -133,12 +132,11 @@ class ServerWindow(WindowTemplate):
 
     def exit_app(self):
         self.delete_all_players_from_listbox()
-        self.p.terminate()
-
-        self.event_scheduler.stop()
+        #self.p.terminate()
+        self.run_call=False
         self.event.set()
         super().exit_app()
 
-    def create_player_process(self,player_new):
-        self.p=multiprocessing.Process(target=GameWindow.GameWindow, args=(player_new.id, player_new.name,))
+    def create_player_process(self, player_new):
+        self.p = multiprocessing.Process(target=GameWindow.GameWindow, args=(player_new.id, player_new.name,))
         self.p.start()
