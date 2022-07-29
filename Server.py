@@ -93,7 +93,7 @@ class Server:
         else:
             if message_received.is_message_connected():
                 player_id = message_received.id
-                self.dic_players[player_id].socket = key
+                self.dic_players[player_id][0].socket = key
                 self.message.set_message_ready()
             if message_received.is_message_choose():
                 self.message.set_message_choose()
