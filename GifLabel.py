@@ -4,7 +4,7 @@ from PIL import Image, ImageTk
 from itertools import count, cycle
 
 
-class ImageLabel(tk.Label):
+class GifLabel(tk.Label):
     """
     A Label that displays images, and plays them if they are gifs
     :im: A PIL Image instance or a string filename

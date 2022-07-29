@@ -4,6 +4,7 @@ from tkinter import messagebox
 
 from event_scheduler import EventScheduler
 
+from GifLabel import GifLabel
 from WindowTemplate import WindowTemplate, ListBoxTemp
 import GameWindow
 from tkinter import *
@@ -27,7 +28,7 @@ class ServerWindow(WindowTemplate):
         self.listbox = ListBoxTemp(self.root, 6, 'browse')
         self.dic_players = {}
         self.player_id_count = 0
-        # self.load_background_music(0, 'sounds/energetic-indie-rock-115484.wav', -1)
+        self.load_background_music(0, 'sounds/best-time-112194.wav', -1)
         self.edit_listbox()
         self.edit_server_window()
         self.T_server= threading.Thread(target=Server(self.Q_messages_send, self.Q_messages_received, self.dic_players,self.event).run)
@@ -66,7 +67,7 @@ class ServerWindow(WindowTemplate):
         self.Q_messages_send.put((key, message_to_send))
 
     def edit_listbox(self):
-        self.listbox.heading('id', text='Player id', anchor=W, )
+        self.listbox.heading('id', text='Player id', anchor=W)
         self.listbox.heading('name', text='Player name', anchor=W)
 
     def delete_selected_player_from_listbox(self):
@@ -111,15 +112,13 @@ class ServerWindow(WindowTemplate):
         # creating widgets
         F_addPlayer=self.create_add_player_frame()
         L_title = Label(self.root, text="R.P.S - Server", font=self.title_font)
+        L_gif = GifLabel(self.root)
         B_disconnectPlayer = Button(self.root, text='Disconnect a player', font=self.font,
                                     command=self.delete_selected_player_from_listbox)
         B_disconnectAll = Button(self.root, text='Disconnect all players', font=self.font,
                                  command=self.delete_all_players_from_listbox)
         # adding image
-        img_server = PhotoImage(file=r"images/janken.png")
-        img_server = img_server.subsample(2, 2)
-        L_img = Label(self.root, image=img_server)
-        L_img.image = img_server
+        L_gif.load('images/gif/Rock-Paper-Scissors-smaller.gif')
 
         # place in grid
         L_title.pack(pady=self.pad_y * 2)
@@ -127,10 +126,10 @@ class ServerWindow(WindowTemplate):
         F_addPlayer.pack(pady=self.pad_y)
         B_disconnectPlayer.pack(pady=self.pad_y)
         B_disconnectAll.pack(pady=self.pad_y)
-        L_img.pack(pady=self.pad_y, padx=self.pad_x)
+        L_gif.pack(pady=self.pad_y, padx=self.pad_x)
 
         # add to widgets list
-        self.add_widgets(L_img, L_title, self.listbox, B_disconnectPlayer, B_disconnectAll)
+        self.add_widgets(L_gif, L_title, self.listbox, B_disconnectPlayer, B_disconnectAll)
 
     def exit_app(self):
         self.delete_all_players_from_listbox()

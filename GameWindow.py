@@ -1,5 +1,5 @@
 from Client import Client
-from ImageLabel import ImageLabel
+from GifLabel import GifLabel
 from WindowTemplate import WindowTemplate
 from tkinter import *
 from PIL import ImageTk, Image
@@ -54,8 +54,6 @@ class GameWindow(WindowTemplate):
         self.send_info(self.message)
         self.init_run()
 
-
-
     def init_frames(self):
         """
         init,creates frames
@@ -63,7 +61,7 @@ class GameWindow(WindowTemplate):
         """
         self.load_all_images()
         self.B_bottom = self.init_bottom_button()
-        self.config_bottom_button("start", 'normal', lambda: self.start_game())
+        self.config_bottom_button("start", 'disabled', lambda: self.start_game())
         self.F_main_menu = self.create_main_menu()
         self.F_round_result = self.create_round_result_frame()
         self.F_final_result = self.create_final_result_frame()
@@ -87,7 +85,7 @@ class GameWindow(WindowTemplate):
         """
 
         T_server_client = threading.Thread(target=lambda: Client(self.player_info, self.Q_messages_send,
-                                                                 self.Q_messages_received,self.event, True))
+                                                                 self.Q_messages_received, self.event, True))
         T_server_client.start()
 
     def init_run(self):
@@ -122,7 +120,7 @@ class GameWindow(WindowTemplate):
             self.event.set()
             super().exit_app()
         if message_received.is_message_ready():
-            self.config_bottom_button("start", 'normal', lambda: self.start_game())
+            self.config_bottom_button(state='normal', func=lambda: self.start_game())
         if message_received.is_message_choose():
             self.pc_choice = message_received.data
             self.L_pc_pick.configure(text="pc chose")
@@ -329,6 +327,8 @@ class GameWindow(WindowTemplate):
             self.update_scores_and_round_labels()
             self.F_round_result.grid_forget()
             self.show_frame_in_grid(self.F_game)
+        self.L_pc_pick.configure(text="Waiting for pc to choose")
+        self.L_player_pick.configure(text="Choose your destiny")
 
     def reset_choices(self):
         self.pc_choice = ""
