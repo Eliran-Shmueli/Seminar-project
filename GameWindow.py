@@ -108,7 +108,7 @@ class GameWindow(WindowTemplate):
         """
 
         T_server_client = threading.Thread(target=lambda: Client(self.player_info, self.Q_messages_send,
-                                                                 self.Q_messages_received, True))
+                                                                 self.Q_messages_received,self.event, True))
         T_server_client.start()
 
     def init_run(self):
@@ -117,7 +117,8 @@ class GameWindow(WindowTemplate):
         """
         if self.root_temp is None:
             self.root.mainloop()
-        self.stop_background_music(0)
+        else:
+            self.stop_background_music(0)
         logging.info('Game window started')
 
     def check_queue_received(self):
@@ -141,6 +142,9 @@ class GameWindow(WindowTemplate):
         if message_received.is_message_exit():
             message_received.set_message_goodbye()
             self.send_info(message_received)
+            self.event_scheduler.stop()
+            self.event.set()
+
             super().exit_app()
         if message_received.is_message_connected():
             self.player_info.id = message_received.id

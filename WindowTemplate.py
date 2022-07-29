@@ -29,6 +29,7 @@ class WindowTemplate:
         self.Q_messages_send = queue.Queue()
         self.widgets_dic = {"label": [], "button": [], "listbox": [], "frame": []}
         self.playing_music = True
+        self.event=threading.Event()
         logging.basicConfig(filename=window_name + '.log', filemode='w', format='%(asctime)s - %(message)s',
                             level=logging.INFO)
         print('thread id ' + str(threading.get_ident()))

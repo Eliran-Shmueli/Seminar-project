@@ -17,7 +17,7 @@ def computer_pick():
 class Server:
     HEADERSIZE = 10
 
-    def __init__(self, Q_messages_send, Q_messages_received, dic_players):
+    def __init__(self, Q_messages_send, Q_messages_received, dic_players,event):
         self.Q_messages_received = Q_messages_received
         self.Q_messages_send = Q_messages_send
         self.sel = selectors.DefaultSelector()
@@ -26,6 +26,8 @@ class Server:
         self.full_msg = b''
         self.dic_players = dic_players
         self.message = Message(-1)
+        self.event_stop = event
+
 
     def run(self):
         lsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -36,7 +38,7 @@ class Server:
         self.sel.register(lsock, selectors.EVENT_READ, data=None)
 
         try:
-            while True:
+            while not self.event_stop.is_set():
                 while self.Q_messages_send.empty() is False:
                     key, message = self.Q_messages_send.get()
                     self.append_message(key.data, message)

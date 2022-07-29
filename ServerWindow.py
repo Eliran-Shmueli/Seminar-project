@@ -14,8 +14,7 @@ from Server import Server
 from Message import Message
 
 
-def create_player_process(player_new):
-    multiprocessing.Process(target=GameWindow.GameWindow, args=(player_new.id, player_new.name,)).start()
+
 
 
 class ServerWindow(WindowTemplate):
@@ -31,9 +30,12 @@ class ServerWindow(WindowTemplate):
         # self.load_background_music(0, 'sounds/energetic-indie-rock-115484.wav', -1)
         self.edit_listbox()
         self.edit_server_window()
-        threading.Thread(target=Server(self.Q_messages_send, self.Q_messages_received, self.dic_players).run).start()
+        self.T_server= threading.Thread(target=Server(self.Q_messages_send, self.Q_messages_received, self.dic_players,self.event).run)
+        self.T_server.start()
         self.start_event_scheduler()
+        self.p=None
         logging.info('Server window started')
+
 
 
 
@@ -43,7 +45,7 @@ class ServerWindow(WindowTemplate):
         self.dic_players[self.player_id_count] = player_new
         self.listbox.insert('', END, values=(self.player_id_count, name))
         if is_client_init is False:
-            create_player_process(player_new)
+            self.create_player_process(player_new)
         logging.info('Player ' + "Id: " + str(self.player_id_count) + ", Name: " + name + ' was added')
         return self.player_id_count
 
@@ -134,4 +136,12 @@ class ServerWindow(WindowTemplate):
 
     def exit_app(self):
         self.delete_all_players_from_listbox()
+        self.p.terminate()
+
+        self.event_scheduler.stop()
+        self.event.set()
         super().exit_app()
+
+    def create_player_process(self,player_new):
+        self.p=multiprocessing.Process(target=GameWindow.GameWindow, args=(player_new.id, player_new.name,))
+        self.p.start()
