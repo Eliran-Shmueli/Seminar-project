@@ -15,7 +15,6 @@ class GameWindow(WindowTemplate):
 
     def __init__(self, player_id=-2, player_name=""):
         super().__init__('Client-- Id - ' + str(player_id) + ', Name - ' + player_name)
-        self.root_temp = None
         self.player_info = Player(player_id, player_name)
         self.image_type = "animated_"
         self.message = None
@@ -46,36 +45,16 @@ class GameWindow(WindowTemplate):
         self.B_bottom = None
         self.start_event_scheduler()
         self.message = Message(self.player_info.id)
-        self.check_info(player_name)
+        self.check_info()
 
-    def check_info(self, player_name):
-        if len(player_name) == 0:
-            self.create_get_name_frame()
-            self.init_run()
-        else:
-            self.init_frames()
-            self.message.set_message_connected()
-            self.init_client_server()
-            self.send_info(self.message)
-            self.init_run()
-
-    def add_new_player(self, name):
-        self.player_info.name = name
-        self.message.set_message_connect_to_server()
+    def check_info(self):
+        self.init_frames()
+        self.message.set_message_connected()
         self.init_client_server()
-        self.send_info(self.message, self.player_info.name)
+        self.send_info(self.message)
+        self.init_run()
 
-    def create_get_name_frame(self):
-        L_welcome = Label(self.root, text="Welcome", font=self.title_font)
-        L_gif = ImageLabel(self.root)
-        F_addPlayer = self.create_add_player_frame('Name:', 'add name')
-        self.load_background_music(0, 'sounds/best-time-112194.wav', -1)
-        L_gif.load('images/gif/Rock-Paper-Scissors anime-bigger.gif')
 
-        L_welcome.grid(row=0, column=0, pady=self.pad_y)
-        L_gif.grid(row=1, column=0, pady=self.pad_y)
-        F_addPlayer.grid(row=2, column=0, pady=self.pad_y)
-        self.add_widgets(L_welcome, L_gif.grid, F_addPlayer)
 
     def init_frames(self):
         """
@@ -115,10 +94,8 @@ class GameWindow(WindowTemplate):
         """
         adds bottom button to root and start mainloop
         """
-        if self.root_temp is None:
-            self.root.mainloop()
-        else:
-            self.stop_background_music(0)
+
+        self.root.mainloop()
         logging.info('Game window started')
 
     def check_queue_received(self):
@@ -142,22 +119,8 @@ class GameWindow(WindowTemplate):
         if message_received.is_message_exit():
             message_received.set_message_goodbye()
             self.send_info(message_received)
-            self.event_scheduler.stop()
             self.event.set()
-
             super().exit_app()
-        if message_received.is_message_connected():
-            self.player_info.id = message_received.id
-            self.clear_dict_widgets()
-            self.root.withdraw()
-            print("test")
-            self.root_temp = self.root
-            self.root = Toplevel()
-            self.edit_template('Client-- Id - ' + str(self.player_info.id) + ', Name - ' + self.player_info.name)
-            self.init_frames()
-
-            self.init_run()
-
         if message_received.is_message_ready():
             self.config_bottom_button("start", 'normal', lambda: self.start_game())
         if message_received.is_message_choose():

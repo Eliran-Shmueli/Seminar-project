@@ -55,8 +55,6 @@ class ServerWindow(WindowTemplate):
     def check_queue_received(self):
         if self.Q_messages_received.empty() is False:
             key, message = self.Q_messages_received.get()
-            if message.is_message_connect_to_server():
-                self.accept_request_to_connect_from_client(key, message)
             if message.is_message_exit():
                 self.delete_player_by_id(message.id)
 

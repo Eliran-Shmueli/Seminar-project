@@ -1,6 +1,6 @@
 class Message:
     def __init__(self, id_client):
-        self.dict_messages = {0: "connected", 1: "ready", 2: "choose", 3: "exit", 4: "goodbye", 5: "data",6:"connect_to_server"}
+        self.dict_messages = {0: "connected", 1: "ready", 2: "choose", 3: "exit", 4: "goodbye", 5: "data"}
         self.id = id_client
         self.message = None
         self.num_data = 0
@@ -27,15 +27,6 @@ class Message:
             self.num_data = 0
         else:
             self.num_data = 1
-
-    def set_message_connect_to_server(self):
-        self.message = self.dict_messages[6]
-
-    def is_message_connect_to_server(self):
-        if self.message == self.dict_messages[6]:
-            return True
-        else:
-            return False
 
     def is_message_connected(self):
         if self.message == self.dict_messages[0]:

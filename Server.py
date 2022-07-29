@@ -90,9 +90,6 @@ class Server:
             print(f"sever - Closing connection to {key.data.addr}")
             self.sel.unregister(key.fileobj)
             key.fileobj.close()
-
-        elif message_received.is_message_connect_to_server():
-            self.Q_messages_received.put((key, message_received))
         else:
             if message_received.is_message_connected():
                 player_id = message_received.id
