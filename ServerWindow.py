@@ -1,6 +1,9 @@
 # Music by Lesfm from Pixabay
 import multiprocessing
 from tkinter import messagebox
+
+from event_scheduler import EventScheduler
+
 from WindowTemplate import WindowTemplate, ListBoxTemp
 import GameWindow
 from tkinter import *
@@ -25,12 +28,14 @@ class ServerWindow(WindowTemplate):
         self.listbox = ListBoxTemp(self.root, 6, 'browse')
         self.dic_players = {}
         self.player_id_count = 0
-        # self.load_background_music(0, 'sounds/best-time-112194.wav', -1)
+        # self.load_background_music(0, 'sounds/energetic-indie-rock-115484.wav', -1)
         self.edit_listbox()
         self.edit_server_window()
         threading.Thread(target=Server(self.Q_messages_send, self.Q_messages_received, self.dic_players).run).start()
-        self.bind_widgets()
+        self.start_event_scheduler()
         logging.info('Server window started')
+
+
 
     def add_new_player(self, name,is_client_init = False):
         self.player_id_count = self.player_id_count + 1
@@ -45,11 +50,10 @@ class ServerWindow(WindowTemplate):
     def mute_background_music(self):
         super().mute_background_music(0)
 
-    def check_queue_received(self, event):
+    def check_queue_received(self):
         if self.Q_messages_received.empty() is False:
             key, message = self.Q_messages_received.get()
             if message.is_message_connect_to_server():
-                print("test 2")
                 self.accept_request_to_connect_from_client(key, message)
             if message.is_message_exit():
                 self.delete_player_by_id(message.id)
@@ -59,7 +63,6 @@ class ServerWindow(WindowTemplate):
         message_to_send = Message(new_player_id)
         message_to_send.set_message_connected()
         self.dic_players[new_player_id].socket = key
-        print("test 3")
         self.Q_messages_send.put((key, message_to_send))
 
     def edit_listbox(self):
@@ -106,7 +109,7 @@ class ServerWindow(WindowTemplate):
 
     def edit_server_window(self):
         # creating widgets
-        self.create_add_player_frame()
+        F_addPlayer=self.create_add_player_frame()
         L_title = Label(self.root, text="R.P.S - Server", font=self.title_font)
         B_disconnectPlayer = Button(self.root, text='Disconnect a player', font=self.font,
                                     command=self.delete_selected_player_from_listbox)
@@ -121,7 +124,7 @@ class ServerWindow(WindowTemplate):
         # place in grid
         L_title.pack(pady=self.pad_y * 2)
         self.listbox.frame.pack(pady=self.pad_y)
-        self.F_addPlayer.pack(pady=self.pad_y)
+        F_addPlayer.pack(pady=self.pad_y)
         B_disconnectPlayer.pack(pady=self.pad_y)
         B_disconnectAll.pack(pady=self.pad_y)
         L_img.pack(pady=self.pad_y, padx=self.pad_x)

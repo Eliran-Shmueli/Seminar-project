@@ -6,6 +6,8 @@ import winsound
 import logging
 import pygame
 from tkinter import ttk, messagebox
+from event_scheduler import EventScheduler
+
 from Player import Player
 
 
@@ -23,15 +25,24 @@ class WindowTemplate:
                             level=logging.INFO)
         print('thread id ' + str(threading.get_ident()))
         self.menubar = None
+        self.event_scheduler = None
         self.root = Tk()
         self.Q_messages_received = queue.Queue()
         self.Q_messages_send = queue.Queue()
         self.widgets_dic = {"label": [], "button": [], "listbox": [], "frame": []}
         self.playing_music = True
-        self.F_addPlayer = None
         self.init_background_music()
         self.edit_template(window_name)
         self.add_widgets(self.root)
+
+    def start_event_scheduler(self):
+        self.event_scheduler = EventScheduler()
+
+        self.event_scheduler.start()
+        self.event_scheduler.enter_recurring(1, 0, self.check_queue_received)
+
+    def clear_dict_widgets(self):
+        self.widgets_dic = {"label": [], "button": [], "listbox": [], "frame": []}
 
     def init_background_music(self):
         pygame.mixer.init()
@@ -39,8 +50,11 @@ class WindowTemplate:
             pygame.mixer.Channel(channel_num).set_volume(self.music_volume)
 
     def load_background_music(self, channel, path, loop):
-        self.channel=channel
+        self.channel = channel
         pygame.mixer.Channel(self.channel).play(pygame.mixer.Sound(path), loop)
+
+    def stop_background_music(self, channel):
+        pygame.mixer.Channel(self.channel).stop()
 
     def mute_background_music(self, channel):
         if self.playing_music is True:
@@ -59,7 +73,8 @@ class WindowTemplate:
         winsound.PlaySound('sounds/mixkit-click-error-1110.wav', winsound.SND_FILENAME | winsound.SND_ASYNC)
 
     def click_sound_exit(self):
-        winsound.PlaySound('sounds/sci-fi-voiceclip-894-sound-effect-goodbye.wav', winsound.SND_FILENAME | winsound.SND_ASYNC)
+        winsound.PlaySound('sounds/sci-fi-voiceclip-894-sound-effect-goodbye.wav',
+                           winsound.SND_FILENAME | winsound.SND_ASYNC)
 
     def edit_template(self, window_name):
         """
@@ -151,16 +166,11 @@ creates and commands to it
             if (type(widget) == Frame) or (type(widget) == Tk):
                 self.widgets_dic["frame"].append(widget)
 
-    def bind_widgets(self):
-        for key in self.widgets_dic.keys():
-            for widget in self.widgets_dic[key]:
-                widget.bind('<Motion>', self.check_queue_received)
-
-    def create_add_player_frame(self):
-        self.F_addPlayer = Frame(self.root)
-        L_addPlayer = Label(self.F_addPlayer, text="Player name:", font=self.font, padx=self.pad_x)
-        E_playerName = Entry(self.F_addPlayer, font=self.font)
-        B_addPlayer = Button(self.F_addPlayer, text='add player', font=self.font,
+    def create_add_player_frame(self, text_title='Player name:', text_button='add player'):
+        F_addPlayer = Frame(self.root)
+        L_addPlayer = Label(F_addPlayer, text=text_title, font=self.font, padx=self.pad_x)
+        E_playerName = Entry(F_addPlayer, font=self.font)
+        B_addPlayer = Button(F_addPlayer, text=text_button, font=self.font,
                              command=lambda: self.set_player_name(E_playerName))
 
         # place in F_addPlayer
@@ -169,7 +179,8 @@ creates and commands to it
         B_addPlayer.pack(side=LEFT, padx=self.pad_x)
 
         # add to widgets list
-        self.add_widgets(B_addPlayer, L_addPlayer, E_playerName, self.F_addPlayer)
+        self.add_widgets(B_addPlayer, L_addPlayer, E_playerName, F_addPlayer)
+        return F_addPlayer
 
     def set_player_name(self, E_playerName):
         name = E_playerName.get()
@@ -182,7 +193,7 @@ creates and commands to it
             messagebox.showerror('R.P.S - Server',
                                  'Error: Name can be only with letters, no spaces and in max length of 12')
 
-    def check_queue_received(self, event):
+    def check_queue_received(self):
         pass
 
     def add_new_player(self, name):

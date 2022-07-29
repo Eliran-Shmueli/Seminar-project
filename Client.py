@@ -30,8 +30,8 @@ class Client:
                 # Check for a socket being monitored to continue.
                 if not self.sel.get_map():
                     break
-        except KeyboardInterrupt:
-            print("client id " + str(self.player_info.id) + "  - Caught keyboard interrupt, exiting")
+        except OSError:
+            print("client id " + str(self.player_info.id) +" - Server is not connected")
 
     # finally:
     #    self.sel.close()
