@@ -8,7 +8,6 @@ import pygame
 from tkinter import ttk, messagebox
 from event_scheduler import EventScheduler
 
-from Player import Player
 
 
 class WindowTemplate:
@@ -21,9 +20,8 @@ class WindowTemplate:
     name_length = 12
 
     def __init__(self, window_name):
-        logging.basicConfig(filename=window_name + '.log', filemode='w', format='%(asctime)s - %(message)s',
-                            level=logging.INFO)
-        print('thread id ' + str(threading.get_ident()))
+
+        self.event_id = None
         self.menubar = None
         self.event_scheduler = None
         self.root = Tk()
@@ -31,15 +29,17 @@ class WindowTemplate:
         self.Q_messages_send = queue.Queue()
         self.widgets_dic = {"label": [], "button": [], "listbox": [], "frame": []}
         self.playing_music = True
+        logging.basicConfig(filename=window_name + '.log', filemode='w', format='%(asctime)s - %(message)s',
+                            level=logging.INFO)
+        print('thread id ' + str(threading.get_ident()))
         self.init_background_music()
         self.edit_template(window_name)
         self.add_widgets(self.root)
 
     def start_event_scheduler(self):
         self.event_scheduler = EventScheduler()
-
         self.event_scheduler.start()
-        self.event_scheduler.enter_recurring(1, 0, self.check_queue_received)
+        self.event_id=self.event_scheduler.enter_recurring(1, 0, self.check_queue_received)
 
     def clear_dict_widgets(self):
         self.widgets_dic = {"label": [], "button": [], "listbox": [], "frame": []}
