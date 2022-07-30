@@ -37,10 +37,10 @@ class WindowTemplate:
         self.edit_template(window_name)
         self.add_widgets(self.root)
 
-    def start_event_scheduler(self):
-        self.event_scheduler = EventScheduler()
-        self.event_scheduler.start()
-        self.event_id = self.event_scheduler.enter_recurring(1, 0, self.check_queue_received)
+   # def start_event_scheduler(self):
+    #    self.event_scheduler = EventScheduler()
+     #   self.event_scheduler.start()
+      #  self.event_id = self.event_scheduler.enter_recurring(1, 0, self.check_queue_received)
 
     def clear_dict_widgets(self):
         self.widgets_dic = {"label": [], "button": [], "listbox": [], "frame": []}
@@ -134,28 +134,31 @@ creates and commands to it
 
     def change_buttons_color(self):
         color = askcolor()[1]
-        logging.info('The buttons color was changed to ' + color)
-        for key in self.widgets_dic.keys():
-            if key == "button":
-                for widget in self.widgets_dic[key]:
-                    widget.configure(bg=color)
+        if color is not None:
+            logging.info('The buttons color was changed to ' + color)
+            for key in self.widgets_dic.keys():
+                if key == "button":
+                    for widget in self.widgets_dic[key]:
+                        widget.configure(bg=color)
 
     def change_background_color(self):
         color = askcolor()[1]
-        logging.info('The background color was changed to ' + color)
-        self.root.configure(bg=color)
-        for key in self.widgets_dic.keys():
-            if (key != "listbox") and (key != "button"):
-                for widget in self.widgets_dic[key]:
-                    widget.configure(bg=color)
+        if color is not None:
+            logging.info('The background color was changed to ' + color)
+            self.root.configure(bg=color)
+            for key in self.widgets_dic.keys():
+                if (key != "listbox") and (key != "button"):
+                    for widget in self.widgets_dic[key]:
+                        widget.configure(bg=color)
 
     def change_text_color(self):
         color = askcolor()[1]
-        logging.info('The text color was changed to ' + color)
-        for key in self.widgets_dic.keys():
-            if key != "frame" and key != "listbox":
-                for widget in self.widgets_dic[key]:
-                    widget.configure(fg=color)
+        if color is not None:
+            logging.info('The text color was changed to ' + color)
+            for key in self.widgets_dic.keys():
+                if key != "frame" and key != "listbox":
+                    for widget in self.widgets_dic[key]:
+                        widget.configure(fg=color)
 
     def add_widgets(self, *widgets):
         for widget in widgets:
