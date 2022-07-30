@@ -88,12 +88,13 @@ class Server:
         if message_received.is_message_goodbye():
             print("client id " + str(message_received.id) + " has exit")
             print(f"sever - Closing connection to {key.data.addr}")
+            del self.dic_players[message_received.id]
             self.sel.unregister(key.fileobj)
             key.fileobj.close()
         else:
             if message_received.is_message_connected():
                 player_id = message_received.id
-                self.dic_players[player_id][0].socket = key
+                self.dic_players[player_id].socket = key
                 self.message.set_message_ready()
             if message_received.is_message_choose():
                 self.message.set_message_choose()

@@ -1,5 +1,6 @@
 # Music by Lesfm from Pixabay
 import multiprocessing
+import time
 from tkinter import messagebox
 
 from event_scheduler import EventScheduler
@@ -40,8 +41,8 @@ class ServerWindow(WindowTemplate):
         self.player_id_count = self.player_id_count + 1
         player_new = Player(self.player_id_count, name)
         self.listbox.insert('', END, values=(self.player_id_count, name))
-        player_process = self.create_player_process(player_new)
-        self.dic_players[self.player_id_count] = (player_new, player_process)
+        self.create_player_process(player_new)
+        self.dic_players[self.player_id_count] =player_new
         logging.info('Player ' + "Id: " + str(self.player_id_count) + ", Name: " + name + ' was added')
         return self.player_id_count
 
@@ -61,7 +62,7 @@ class ServerWindow(WindowTemplate):
         new_player_id = self.add_new_player(message.data)
         message_to_send = Message(new_player_id)
         message_to_send.set_message_connected()
-        self.dic_players[new_player_id][0].socket = key
+        self.dic_players[new_player_id].socket = key
         self.Q_messages_send.put((key, message_to_send))
 
     def edit_listbox(self):
@@ -77,7 +78,6 @@ class ServerWindow(WindowTemplate):
             player_name = player_info[1]
             self.listbox.delete(selected_player[0])
             self.disconnect_client(player_id)
-            del self.dic_players[player_id]
             logging.info('Player id: ' + str(player_id) + ', name: ' + player_name + 'was disconnected')
         else:
             self.click_sound_error()
@@ -89,7 +89,6 @@ class ServerWindow(WindowTemplate):
                 self.listbox.delete(player_index)
             for player_id in self.dic_players.keys():
                 self.disconnect_client(player_id)
-            self.dic_players.clear()
         else:
             self.click_sound_error()
 
@@ -100,10 +99,11 @@ class ServerWindow(WindowTemplate):
             if player_index_id == player_id:
                 self.listbox.delete(player_index)
 
+
     def disconnect_client(self, player_id):
         message = Message(player_id)
         message.set_message_exit()
-        key = self.dic_players[player_id][0].socket
+        key = self.dic_players[player_id].socket
         self.Q_messages_send.put((key, message))
 
     def edit_server_window(self):
@@ -132,6 +132,9 @@ class ServerWindow(WindowTemplate):
     def exit_app(self):
         self.delete_all_players_from_listbox()
         # self.p.terminate()
+        while bool(self.dic_players) is True:
+            time.sleep(1)
+
         self.run_call = False
         self.event.set()
         super().exit_app()
@@ -139,4 +142,3 @@ class ServerWindow(WindowTemplate):
     def create_player_process(self, player_new):
         player_process = multiprocessing.Process(target=GameWindow.GameWindow, args=(player_new.id, player_new.name,))
         player_process.start()
-        return player_process

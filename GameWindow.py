@@ -97,7 +97,6 @@ class GameWindow(WindowTemplate):
         logging.info('Game window started')
 
     def check_queue_received(self):
-        print("test")
         if self.Q_messages_received.empty() is False:
             message = self.Q_messages_received.get()
             self.actions(message)
