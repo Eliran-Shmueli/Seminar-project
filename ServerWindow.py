@@ -61,7 +61,7 @@ class ServerWindow(WindowTemplate):
     def accept_request_to_connect_from_client(self, key, message):
         new_player_id = self.add_new_player(message.data)
         message_to_send = Message(new_player_id)
-        message_to_send.set_message_connected()
+        message_to_send.set_message_join_request()
         self.dic_players[new_player_id].socket = key
         self.Q_messages_send.put((key, message_to_send))
 

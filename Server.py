@@ -72,11 +72,6 @@ class Server:
                 print("sever - info from client " + message_received.message)
                 self.actions(message_received, key)
                 data.byte_in = b''
-
-        # else:
-        # print(f"sever - Closing connection to {data.addr}")
-        # self.sel.unregister(sock)
-        # sock.close()
         if mask & selectors.EVENT_WRITE:
 
             if data.byte_out:
@@ -92,10 +87,10 @@ class Server:
             self.sel.unregister(key.fileobj)
             key.fileobj.close()
         else:
-            if message_received.is_message_connected():
+            if message_received.is_message_join_request():
                 player_id = message_received.id
                 self.dic_players[player_id].socket = key
-                self.message.set_message_ready()
+                self.message.set_message_accepted()
             if message_received.is_message_choose():
                 self.message.set_message_choose()
                 self.message.add_data_to_message(computer_pick())

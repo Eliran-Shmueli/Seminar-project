@@ -1,15 +1,15 @@
 class Message:
     def __init__(self, id_client):
-        self.dict_messages = {0: "connected", 1: "ready", 2: "choose", 3: "exit", 4: "goodbye", 5: "data"}
+        self.dict_messages = {0: "join request", 1: "accepted", 2: "choose", 3: "exit", 4: "goodbye", 5: "data"}
         self.id = id_client
         self.message = None
         self.num_data = 0
         self.data = None
 
-    def set_message_connected(self):
+    def set_message_join_request(self):
         self.message = self.dict_messages[0]
 
-    def set_message_ready(self):
+    def set_message_accepted(self):
         self.message = self.dict_messages[1]
 
     def set_message_choose(self):
@@ -28,13 +28,13 @@ class Message:
         else:
             self.num_data = 1
 
-    def is_message_connected(self):
+    def is_message_join_request(self):
         if self.message == self.dict_messages[0]:
             return True
         else:
             return False
 
-    def is_message_ready(self):
+    def is_message_accepted(self):
         if self.message == self.dict_messages[1]:
             return True
         else:

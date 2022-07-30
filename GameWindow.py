@@ -49,7 +49,7 @@ class GameWindow(WindowTemplate):
 
     def check_info(self):
         self.init_frames()
-        self.message.set_message_connected()
+        self.message.set_message_join_request()
         self.init_client_server()
         self.send_info(self.message)
         self.init_run()
@@ -120,7 +120,7 @@ class GameWindow(WindowTemplate):
             self.run_call=False
             self.event.set()
             super().exit_app()
-        if message_received.is_message_ready():
+        if message_received.is_message_accepted():
             self.config_bottom_button(state='normal', func=lambda: self.start_game())
         if message_received.is_message_choose():
             self.pc_choice = message_received.data
