@@ -101,43 +101,37 @@ class ServerWindow(WindowTemplate):
         self.Q_messages_send.put((key, message))
 
     def create_buttons_frame(self):
+        # creating widgets
         F_buttons = Frame(self.F_main_menu)
-
         B_player_info = Button(F_buttons, text='Player info', font=self.font,
                                command=self.get_player_info)
         B_disconnectPlayer = Button(F_buttons, text='Disconnect a player', font=self.font,
                                     command=self.delete_selected_player_from_listbox)
         B_disconnectAll = Button(F_buttons, text='Disconnect all players', font=self.font,
                                  command=self.delete_all_players_from_listbox)
-
+        # place in grid
         B_player_info.grid(row=0, column=0, sticky='ew')
         B_disconnectPlayer.grid(row=1, column=0, pady=self.pad_y, sticky='ew')
         B_disconnectAll.grid(row=2, column=0, sticky='ew')
-
+        # add to widgets list
         self.add_widgets(B_disconnectPlayer, B_disconnectAll, B_player_info)
-
         return F_buttons
 
     def edit_server_window(self):
         # creating widgets
         F_addPlayer = self.create_add_player_frame(self.F_main_menu)
-
         L_title = Label(self.F_main_menu, text="R.P.S - Server", font=self.title_font)
         L_gif = GifLabel(self.F_main_menu)
-
         F_buttons = self.create_buttons_frame()
-
         # adding image
         L_gif.load('images/gif/Rock-Paper-Scissors-smaller.gif')
-
-        # place in grid
+        # place in Frame
         self.F_main_menu.pack()
         L_title.pack(pady=self.pad_y * 2)
         self.listbox.frame.pack(pady=self.pad_y)
         F_addPlayer.pack(pady=self.pad_y)
         F_buttons.pack(pady=self.pad_y)
         L_gif.pack(pady=self.pad_y, padx=self.pad_x)
-
         # add to widgets list
         self.add_widgets(L_gif, L_title, self.listbox, self.F_main_menu, F_buttons)
 
