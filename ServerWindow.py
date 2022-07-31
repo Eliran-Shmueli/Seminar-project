@@ -1,10 +1,6 @@
-# Music by Lesfm from Pixabay
+# Music by FASSounds from Pixabay
 import multiprocessing
 import time
-from tkinter import messagebox
-
-from event_scheduler import EventScheduler
-
 from GifLabel import GifLabel
 from WindowTemplate import WindowTemplate, ListBoxTemp
 import GameWindow
@@ -23,18 +19,17 @@ class ServerWindow(WindowTemplate):
     def __init__(self, window_name):
         super().__init__(window_name)
         self.server = None
-        self.listbox = ListBoxTemp(self.root, 6, 'browse')
         self.dic_players = {}
         self.player_id_count = 0
         self.load_background_music(0, 'sounds/best-time-112194.wav', -1)
+        self.F_main_menu = Frame(self.root)
+        self.listbox = ListBoxTemp(self.F_main_menu, 6, 'browse')
         self.edit_listbox()
         self.edit_server_window()
         self.T_server = threading.Thread(
             target=Server(self.Q_messages_send, self.Q_messages_received, self.dic_players, self.event).run)
         self.T_server.start()
-        # self.start_event_scheduler()
         self.call_after_func()
-        self.p = None
         logging.info('Server window started')
 
     def add_new_player(self, name):
@@ -42,7 +37,7 @@ class ServerWindow(WindowTemplate):
         player_new = Player(self.player_id_count, name)
         self.listbox.insert('', END, values=(self.player_id_count, name))
         self.create_player_process(player_new)
-        self.dic_players[self.player_id_count] =player_new
+        self.dic_players[self.player_id_count] = player_new
         logging.info('Player ' + "Id: " + str(self.player_id_count) + ", Name: " + name + ' was added')
         return self.player_id_count
 
@@ -99,35 +94,55 @@ class ServerWindow(WindowTemplate):
             if player_index_id == player_id:
                 self.listbox.delete(player_index)
 
-
     def disconnect_client(self, player_id):
         message = Message(player_id)
         message.set_message_exit()
         key = self.dic_players[player_id].socket
         self.Q_messages_send.put((key, message))
 
+    def create_buttons_frame(self):
+        F_buttons = Frame(self.F_main_menu)
+
+        B_player_info = Button(F_buttons, text='Player info', font=self.font,
+                               command=self.get_player_info)
+        B_disconnectPlayer = Button(F_buttons, text='Disconnect a player', font=self.font,
+                                    command=self.delete_selected_player_from_listbox)
+        B_disconnectAll = Button(F_buttons, text='Disconnect all players', font=self.font,
+                                 command=self.delete_all_players_from_listbox)
+
+        B_player_info.grid(row=0, column=0, sticky='ew')
+        B_disconnectPlayer.grid(row=1, column=0, pady=self.pad_y, sticky='ew')
+        B_disconnectAll.grid(row=2, column=0, sticky='ew')
+
+        self.add_widgets(B_disconnectPlayer, B_disconnectAll, B_player_info)
+
+        return F_buttons
+
     def edit_server_window(self):
         # creating widgets
-        F_addPlayer = self.create_add_player_frame()
-        L_title = Label(self.root, text="R.P.S - Server", font=self.title_font)
-        L_gif = GifLabel(self.root)
-        B_disconnectPlayer = Button(self.root, text='Disconnect a player', font=self.font,
-                                    command=self.delete_selected_player_from_listbox)
-        B_disconnectAll = Button(self.root, text='Disconnect all players', font=self.font,
-                                 command=self.delete_all_players_from_listbox)
+        F_addPlayer = self.create_add_player_frame(self.F_main_menu)
+
+        L_title = Label(self.F_main_menu, text="R.P.S - Server", font=self.title_font)
+        L_gif = GifLabel(self.F_main_menu)
+
+        F_buttons = self.create_buttons_frame()
+
         # adding image
         L_gif.load('images/gif/Rock-Paper-Scissors-smaller.gif')
 
         # place in grid
+        self.F_main_menu.pack()
         L_title.pack(pady=self.pad_y * 2)
         self.listbox.frame.pack(pady=self.pad_y)
         F_addPlayer.pack(pady=self.pad_y)
-        B_disconnectPlayer.pack(pady=self.pad_y)
-        B_disconnectAll.pack(pady=self.pad_y)
+        F_buttons.pack(pady=self.pad_y)
         L_gif.pack(pady=self.pad_y, padx=self.pad_x)
 
         # add to widgets list
-        self.add_widgets(L_gif, L_title, self.listbox, B_disconnectPlayer, B_disconnectAll)
+        self.add_widgets(L_gif, L_title, self.listbox, self.F_main_menu, F_buttons)
+
+    def get_player_info(self):
+        pass
 
     def exit_app(self):
         self.delete_all_players_from_listbox()

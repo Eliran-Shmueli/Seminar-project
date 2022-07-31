@@ -1,3 +1,5 @@
+from Game_info import Game_info
+
 from Client import Client
 from WindowTemplate import WindowTemplate
 from tkinter import *
@@ -12,17 +14,17 @@ class GameWindow(WindowTemplate):
     font_score = 'Helvetica 14 bold'
     num_music_loops = 0
 
-    def __init__(self, player_id=-2, player_name=""):
+    def __init__(self, player_id, player_name):
         super().__init__('Client-- Id - ' + str(player_id) + ', Name - ' + player_name)
-        self.player_info = Player(player_id, player_name)
+        self.game_info = Game_info(player_id, player_name)
         self.image_type = "animated_"
-        self.message = None
         self.round_count = 1
         self.player_score = 0
         self.pc_score = 0
+        self.images = {}
+        self.message = None
         self.player_choice = None
         self.pc_choice = None
-        self.images = {}
         self.F_game = None
         self.F_main_menu = None
         self.F_final_result = None
@@ -42,9 +44,9 @@ class GameWindow(WindowTemplate):
         self.B_paper = None
         self.B_scissors = None
         self.B_bottom = None
-        # self.start_event_scheduler()
+
         self.call_after_func()
-        self.message = Message(self.player_info.id)
+        self.message = Message(self.game_info.get_player_id())
         self.check_info()
 
     def check_info(self):
@@ -84,8 +86,8 @@ class GameWindow(WindowTemplate):
         init message and thread, set message to "connected"
         """
 
-        T_server_client = threading.Thread(target=lambda: Client(self.player_info, self.Q_messages_send,
-                                                                 self.Q_messages_received, self.event, True))
+        T_server_client = threading.Thread(target=lambda: Client(self.game_info.get_player_id(), self.Q_messages_send,
+                                                                 self.Q_messages_received, self.event))
         T_server_client.start()
 
     def init_run(self):
@@ -117,7 +119,7 @@ class GameWindow(WindowTemplate):
         if message_received.is_message_exit():
             self.message.set_message_goodbye()
             self.send_info(self.message)
-            self.run_call=False
+            self.run_call = False
             self.event.set()
             super().exit_app()
         if message_received.is_message_accepted():
@@ -129,7 +131,7 @@ class GameWindow(WindowTemplate):
         if message_received.is_message_goodbye():
             self.message.set_message_goodbye()
             self.send_info(self.message)
-            self.run_call=False
+            self.run_call = False
             self.event.set()
             super().exit_app()
 
@@ -185,7 +187,7 @@ class GameWindow(WindowTemplate):
         # create widgets
         F_scores = Frame(F_game)
 
-        self.L_player_score = Label(F_scores, text=self.player_info.name + ": " + str(self.player_score),
+        self.L_player_score = Label(F_scores, text=self.game_info.get_player_name() + ": " + str(self.player_score),
                                     font=self.font_score)
         self.L_pc_score = Label(F_scores, text="Pc: " + str(self.pc_score), font=self.font_score)
         # put in order
@@ -263,9 +265,10 @@ class GameWindow(WindowTemplate):
         creates a frame that show the result of a round
         :return: frame
         """
+
         F_round_result = Frame(self.root)
         self.L_round_result_title = Label(F_round_result, font=self.title_font)
-        L_round_result_player = Label(F_round_result, text=self.player_info.name + ':', font=self.font_score)
+        L_round_result_player = Label(F_round_result, text=self.game_info.get_player_name() + ':', font=self.font_score)
         L_round_result_pc = Label(F_round_result, text='Pc:', font=self.font_score)
         self.L_round_result_player_choice_img = Label(F_round_result)
         self.L_round_result_pc_choice_img = Label(F_round_result)
@@ -291,7 +294,7 @@ class GameWindow(WindowTemplate):
         self.click_sound_valid()
         self.load_background_music(1, 'sounds/start.wav', self.num_music_loops)
         logging.info('Player started a new game')
-        self.player_info.increase_num_games()
+        self.game_info.increase_num_games()
         self.F_main_menu.grid_forget()
         self.show_frame_in_grid(self.F_game)
 
@@ -356,7 +359,7 @@ class GameWindow(WindowTemplate):
         """
         updates the labels of round and scores
         """
-        self.L_player_score.configure(text=self.player_info.name + ": " + str(self.player_score))
+        self.L_player_score.configure(text=self.game_info.get_player_name() + ": " + str(self.player_score))
         self.L_pc_score.configure(text="Pc: " + str(self.pc_score))
         self.L_title.configure(text="Round: " + str(self.round_count))
 
@@ -375,7 +378,7 @@ class GameWindow(WindowTemplate):
         """
         updates the titles and image at the final result frame, according to the scores
         """
-        self.L_final_result_player_score.configure(text=self.player_info.name + ": " + str(self.player_score))
+        self.L_final_result_player_score.configure(text=self.game_info.get_player_name() + ": " + str(self.player_score))
         self.L_final_result_pc_score.configure(text="Pc: " + str(self.pc_score))
         if self.player_score == self.pc_score:
             logging.info('The game ended in a tie')
@@ -398,17 +401,17 @@ class GameWindow(WindowTemplate):
         if result == "tie":
             self.load_background_music(1, 'sounds/tie.wav', self.num_music_loops)
             self.L_round_result_title.configure(text="It's a tie")
-            self.player_info.increase_num_ties()
+            self.game_info.increase_num_ties()
         elif result == "win":
             self.load_background_music(1, 'sounds/mixkit-video-game-win-2016.wav', self.num_music_loops)
             self.L_round_result_title.configure(text="You won")
             self.player_score = self.player_score + 1
-            self.player_info.increase_num_wins()
+            self.game_info.increase_num_wins()
         elif result == "lose":
             self.load_background_music(1, 'sounds/mixkit-horror-lose-2028.wav', self.num_music_loops)
             self.L_round_result_title.configure(text="You lost")
             self.pc_score = self.pc_score + 1
-            self.player_info.increase_num_losses()
+            self.game_info.increase_num_losses()
 
     def get_round_result(self):
         """
@@ -419,15 +422,15 @@ class GameWindow(WindowTemplate):
             return "tie"
 
         if self.player_choice == "rock":
-            self.player_info.increase_num_rock()
+            self.game_info.increase_num_rock()
             return self.result("scissors")
 
         elif self.player_choice == "paper":
-            self.player_info.increase_num_paper()
+            self.game_info.increase_num_paper()
             return self.result("rock")
 
         else:
-            self.player_info.increase_num_scissors()
+            self.game_info.increase_num_scissors()
             return self.result("paper")
 
     def result(self, weak_pick):

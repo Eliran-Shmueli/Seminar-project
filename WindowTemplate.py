@@ -6,7 +6,6 @@ import winsound
 import logging
 import pygame
 from tkinter import ttk, messagebox
-from event_scheduler import EventScheduler
 import time
 
 class WindowTemplate:
@@ -22,7 +21,6 @@ class WindowTemplate:
 
         self.event_id = None
         self.menubar = None
-        self.event_scheduler = None
         self.root = Tk()
         self.Q_messages_received = queue.Queue()
         self.Q_messages_send = queue.Queue()
@@ -36,11 +34,6 @@ class WindowTemplate:
         self.init_background_music()
         self.edit_template(window_name)
         self.add_widgets(self.root)
-
-   # def start_event_scheduler(self):
-    #    self.event_scheduler = EventScheduler()
-     #   self.event_scheduler.start()
-      #  self.event_id = self.event_scheduler.enter_recurring(1, 0, self.check_queue_received)
 
     def clear_dict_widgets(self):
         self.widgets_dic = {"label": [], "button": [], "listbox": [], "frame": []}
@@ -171,11 +164,11 @@ creates and commands to it
             if (type(widget) == Frame) or (type(widget) == Tk):
                 self.widgets_dic["frame"].append(widget)
 
-    def create_add_player_frame(self, text_title='Player name:', text_button='add player'):
-        F_addPlayer = Frame(self.root)
-        L_addPlayer = Label(F_addPlayer, text=text_title, font=self.font, padx=self.pad_x)
+    def create_add_player_frame(self, root):
+        F_addPlayer = Frame(root)
+        L_addPlayer = Label(F_addPlayer, text='Player name:', font=self.font, padx=self.pad_x)
         E_playerName = Entry(F_addPlayer, font=self.font)
-        B_addPlayer = Button(F_addPlayer, text=text_button, font=self.font,
+        B_addPlayer = Button(F_addPlayer, text='add player', font=self.font,
                              command=lambda: self.set_player_name(E_playerName))
 
         # place in F_addPlayer

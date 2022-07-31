@@ -17,7 +17,7 @@ def computer_pick():
 class Server:
     HEADERSIZE = 10
 
-    def __init__(self, Q_messages_send, Q_messages_received, dic_players,event):
+    def __init__(self, Q_messages_send, Q_messages_received, dic_players, event):
         self.Q_messages_received = Q_messages_received
         self.Q_messages_send = Q_messages_send
         self.sel = selectors.DefaultSelector()
@@ -27,7 +27,6 @@ class Server:
         self.dic_players = dic_players
         self.message = Message(-1)
         self.event_stop = event
-
 
     def run(self):
         lsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -96,7 +95,7 @@ class Server:
                 self.message.add_data_to_message(computer_pick())
             if message_received.is_message_exit():
                 self.message.set_message_goodbye()
-                self.Q_messages_received.put((key,message_received))
+                self.Q_messages_received.put((key, message_received))
             self.append_message(key.data, self.message)
 
     def append_message(self, data, message):

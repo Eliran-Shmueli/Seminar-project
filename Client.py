@@ -7,11 +7,10 @@ import pickle
 class Client:
     HEADERSIZE = 10
 
-    def __init__(self, player_info, Q_messages_send, Q_messages_received,event, is_client_init=False):
+    def __init__(self, player_id, Q_messages_send, Q_messages_received, event):
         host = socket.gethostname()
         port = 1231
-        self.is_client_init = is_client_init
-        self.player_info = player_info
+        self.player_id = player_id
         self.Q_messages_received = Q_messages_received
         self.Q_messages_send = Q_messages_send
         self.sel = selectors.DefaultSelector()
@@ -31,7 +30,7 @@ class Client:
                 if not self.sel.get_map():
                     break
         except OSError:
-            print("client id " + str(self.player_info.id) +" - Server is not connected")
+            print("client id " + str(self.player_id) + " - Server is not connected")
 
     # finally:
     #    self.sel.close()
@@ -39,8 +38,8 @@ class Client:
     def start_connections(self, host, port):
         server_addr = (host, port)
 
-        print(f"client id " + str(self.player_info.id) + " - Starting connection - player id " + str(
-            self.player_info.id) + " to " + str(server_addr))
+        print(f"client id " + str(self.player_id) + " - Starting connection - player id " + str(
+            self.player_id) + " to " + str(server_addr))
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.setblocking(False)
         sock.connect_ex(server_addr)
@@ -58,14 +57,11 @@ class Client:
                 data.byte_in += recv_data
                 message_received = pickle.loads(data.byte_in[self.HEADERSIZE:])
                 self.Q_messages_received.put(message_received)
-                print("client id " + str(self.player_info.id) + " - info from server: " + message_received.message)
+                print("client id " + str(self.player_id) + " - info from server: " + message_received.message)
                 if message_received.is_message_data():
                     print("server chose - " + message_received.data)
                 data.byte_in = b""
-        #  if not recv_data:
-        # print(f"Closing connection ")
-        # self.sel.unregister(sock)
-        #  sock.close()
+
         if mask & selectors.EVENT_WRITE:
 
             if not data.byte_out and self.Q_messages_send.empty() is False:
@@ -74,4 +70,4 @@ class Client:
                 if data.byte_out:
                     sent = sock.send(data.byte_out)  # Should be ready to write
                     data.byte_out = data.byte_out[sent:]
-                    # self.run = True
+
