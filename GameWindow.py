@@ -136,7 +136,7 @@ class GameWindow(WindowTemplate):
         add selected frame to the top grid
         :param frame: selected frame
         """
-        frame.grid(row=0, column=0)
+        frame.grid(row=0, column=0,pady=self.pad_y)
 
     def config_bottom_button(self, text='', state='', func=None):
         """
