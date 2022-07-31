@@ -1,6 +1,8 @@
 # Music by FASSounds from Pixabay
 import multiprocessing
 import time
+
+from FrameInfo import FrameInfo
 from GifLabel import GifLabel
 from ToolTip import CreateToolTip
 from WindowTemplate import WindowTemplate, ListBoxTemp
@@ -11,6 +13,7 @@ import logging
 import threading
 from Server import Server
 from Message import Message
+
 
 
 class ServerWindow(WindowTemplate):
@@ -24,7 +27,7 @@ class ServerWindow(WindowTemplate):
         self.player_id_count = 0
         self.load_background_music(0, 'sounds/best-time-112194.wav', -1)
         self.F_main_menu = Frame(self.root)
-        self.F_player_info = Frame(self.root)
+        self.F_player_info = FrameInfo(self.root,self.F_main_menu)
         self.listbox = ListBoxTemp(self.F_main_menu, 6, 'browse')
         self.edit_listbox()
         self.edit_server_frame()
@@ -55,8 +58,10 @@ class ServerWindow(WindowTemplate):
     def actions(self, message):
         if message.is_message_exit():
             self.delete_player_by_id(message.id)
-        if message.is_message_game_info_request():
-            print("get")
+        if message.is_message_game_info_request() and message.is_message_have_data():
+            game_info = message.data
+            self.F_main_menu.pack_forget()
+            self.F_player_info.pack()
 
 
 
@@ -117,12 +122,12 @@ class ServerWindow(WindowTemplate):
         img_player_disconnect_all = PhotoImage(file='images/buttons/delete-all.png')
 
         F_buttons = Frame(self.F_main_menu)
-        B_player_info = Button(F_buttons, image=img_player_info, font=self.font,bd=0,
+        B_player_info = Button(F_buttons, image=img_player_info, font=self.font, bd=0,
                                command=self.get_player_info)
-        B_disconnect_player = Button(F_buttons, image=img_player_disconnect, font=self.font,bd=0,
-                                    command=self.delete_selected_player_from_listbox)
-        B_disconnect_all = Button(F_buttons, image=img_player_disconnect_all, font=self.font,bd=0,
-                                 command=self.delete_all_players_from_listbox)
+        B_disconnect_player = Button(F_buttons, image=img_player_disconnect, font=self.font, bd=0,
+                                     command=self.delete_selected_player_from_listbox)
+        B_disconnect_all = Button(F_buttons, image=img_player_disconnect_all, font=self.font, bd=0,
+                                  command=self.delete_all_players_from_listbox)
 
         B_player_info.image = img_player_info
         B_disconnect_player.image = img_player_disconnect
@@ -130,21 +135,15 @@ class ServerWindow(WindowTemplate):
 
         # place in grid
         B_player_info.grid(row=0, column=0, sticky='ew')
-        B_disconnect_player.grid(row=1, column=0, pady=self.pad_y*2, sticky='ew')
+        B_disconnect_player.grid(row=1, column=0, pady=self.pad_y * 2, sticky='ew')
         B_disconnect_all.grid(row=2, column=0, sticky='ew')
 
-        CreateToolTip(B_player_info,text="Get player info")
+        CreateToolTip(B_player_info, text="Get player info")
         CreateToolTip(B_disconnect_player, text="Disconnect selected player")
         CreateToolTip(B_disconnect_all, text="Disconnect all players")
         # add to widgets list
         self.add_widgets(B_disconnect_player, B_disconnect_all, B_player_info)
         return F_buttons
-
-    def create_player_info_frame(self):
-        L_title = Label(self.F_main_menu, text="Player info", font=self.title_font)
-        L_player_id = Label(self.F_main_menu, text="Player id: ", font=self.font)
-        L_player_name = Label(self.F_main_menu, text="Player_name", font=self.font)
-        B_to_main_menu = Button(self.F_player_info,text="Main menu")
 
     def edit_server_frame(self):
         # creating widgets
@@ -156,12 +155,12 @@ class ServerWindow(WindowTemplate):
         L_gif.load('images/gif/Rock-Paper-Scissors-smaller.gif')
         # place in Frame
         self.F_main_menu.pack()
-        L_title.grid(row=0,column=0,columnspan=2,pady=self.pad_y * 2)
-        self.listbox.frame.grid(row=1,column=0,columnspan=1,pady=self.pad_y)
-        F_buttons.grid(row=1, column=1, columnspan=1, pady=self.pad_y,sticky='wn')
-        F_addPlayer.grid(row=2,column=0,columnspan=2,pady=self.pad_y,sticky='we')
+        L_title.grid(row=0, column=0, columnspan=2, pady=self.pad_y * 2)
+        self.listbox.frame.grid(row=1, column=0, columnspan=1, pady=self.pad_y)
+        F_buttons.grid(row=1, column=1, columnspan=1, pady=self.pad_y, sticky='wn')
+        F_addPlayer.grid(row=2, column=0, columnspan=2, pady=self.pad_y, sticky='w')
 
-        L_gif.grid(row=3,column=0,columnspan=2,pady=self.pad_y, padx=self.pad_x)
+        L_gif.grid(row=3, column=0, columnspan=2, pady=self.pad_y, padx=self.pad_x)
         # add to widgets list
         self.add_widgets(L_gif, L_title, self.listbox, self.F_main_menu, F_buttons)
 
