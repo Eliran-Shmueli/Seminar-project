@@ -100,10 +100,6 @@ creates and commands to it
             label='Change text color',
             command=lambda: self.change_text_color())
         file_menu.add_command(
-            label='Change buttons color',
-            command=lambda: self.change_buttons_color()
-        )
-        file_menu.add_command(
             label='Change background color',
             command=lambda: self.change_background_color()
         )
@@ -143,7 +139,7 @@ creates and commands to it
             logging.info('The background color was changed to ' + color)
             self.root.configure(bg=color)
             for key in self.widgets_dic.keys():
-                if (key != "listbox") and (key != "button"):
+                if key != "listbox":
                     for widget in self.widgets_dic[key]:
                         widget.configure(bg=color)
 
