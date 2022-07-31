@@ -8,6 +8,9 @@ import pygame
 from tkinter import ttk, messagebox
 import time
 
+from ToolTip import CreateToolTip
+
+
 class WindowTemplate:
     pad_x = 20
     pad_y = 20
@@ -166,16 +169,20 @@ creates and commands to it
 
     def create_add_player_frame(self, root):
         F_addPlayer = Frame(root)
+
         L_addPlayer = Label(F_addPlayer, text='Player name:', font=self.font, padx=self.pad_x)
         E_playerName = Entry(F_addPlayer, font=self.font)
-        B_addPlayer = Button(F_addPlayer, text='add player', font=self.font,
+        img_add_player = PhotoImage(file='images/buttons/add-user.png')
+        B_addPlayer = Button(F_addPlayer,image=img_add_player, font=self.font,bd=0,
                              command=lambda: self.set_player_name(E_playerName))
+        B_addPlayer.image = img_add_player
 
         # place in F_addPlayer
         L_addPlayer.pack(side=LEFT)
         E_playerName.pack(side=LEFT)
         B_addPlayer.pack(side=LEFT, padx=self.pad_x)
 
+        CreateToolTip(B_addPlayer, text="Add player")
         # add to widgets list
         self.add_widgets(B_addPlayer, L_addPlayer, E_playerName, F_addPlayer)
         return F_addPlayer

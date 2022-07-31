@@ -1,6 +1,7 @@
 class Message:
     def __init__(self, id_client):
-        self.dict_messages = {0: "join request", 1: "accepted", 2: "choose", 3: "exit", 4: "goodbye", 5: "data"}
+        self.dict_messages = {0: "join request", 1: "accepted", 2: "choose", 3: "exit", 4: "goodbye", 5: "game info "
+                                                                                                         "request"}
         self.id = id_client
         self.message = None
         self.num_data = 0
@@ -20,6 +21,9 @@ class Message:
 
     def set_message_goodbye(self):
         self.message = self.dict_messages[4]
+
+    def set_message_game_info_request(self):
+        self.message = self.dict_messages[5]
 
     def add_data_to_message(self, data):
         self.data = data
@@ -58,7 +62,13 @@ class Message:
         else:
             return False
 
-    def is_message_data(self):
+    def is_message_game_info_request(self):
+        if self.message == self.dict_messages[5]:
+            return True
+        else:
+            return False
+
+    def is_message_have_data(self):
         if self.num_data == 1:
             return True
         else:

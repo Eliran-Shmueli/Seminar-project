@@ -58,7 +58,7 @@ class Client:
                 message_received = pickle.loads(data.byte_in[self.HEADERSIZE:])
                 self.Q_messages_received.put(message_received)
                 print("client id " + str(self.player_id) + " - info from server: " + message_received.message)
-                if message_received.is_message_data():
+                if message_received.is_message_have_data():
                     print("server chose - " + message_received.data)
                 data.byte_in = b""
 

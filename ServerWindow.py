@@ -2,6 +2,7 @@
 import multiprocessing
 import time
 from GifLabel import GifLabel
+from ToolTip import CreateToolTip
 from WindowTemplate import WindowTemplate, ListBoxTemp
 import GameWindow
 from tkinter import *
@@ -23,9 +24,10 @@ class ServerWindow(WindowTemplate):
         self.player_id_count = 0
         self.load_background_music(0, 'sounds/best-time-112194.wav', -1)
         self.F_main_menu = Frame(self.root)
+        self.F_player_info = Frame(self.root)
         self.listbox = ListBoxTemp(self.F_main_menu, 6, 'browse')
         self.edit_listbox()
-        self.edit_server_window()
+        self.edit_server_frame()
         self.T_server = threading.Thread(
             target=Server(self.Q_messages_send, self.Q_messages_received, self.dic_players, self.event).run)
         self.T_server.start()
@@ -45,20 +47,25 @@ class ServerWindow(WindowTemplate):
         super().mute_background_music(0)
 
     def check_queue_received(self):
-
         if self.Q_messages_received.empty() is False:
             key, message = self.Q_messages_received.get()
-            if message.is_message_exit():
-                self.delete_player_by_id(message.id)
-
+            self.actions(message)
         self.call_after_func()
+
+    def actions(self, message):
+        if message.is_message_exit():
+            self.delete_player_by_id(message.id)
+        if message.is_message_game_info_request():
+            print("get")
+
+
 
     def accept_request_to_connect_from_client(self, key, message):
         new_player_id = self.add_new_player(message.data)
         message_to_send = Message(new_player_id)
         message_to_send.set_message_join_request()
         self.dic_players[new_player_id].socket = key
-        self.Q_messages_send.put((key, message_to_send))
+        self.send_message_to_player(new_player_id, message_to_send)
 
     def edit_listbox(self):
         self.listbox.heading('id', text='Player id', anchor=W)
@@ -97,27 +104,49 @@ class ServerWindow(WindowTemplate):
     def disconnect_client(self, player_id):
         message = Message(player_id)
         message.set_message_exit()
+        self.send_message_to_player(player_id, message)
+
+    def send_message_to_player(self, player_id, message):
         key = self.dic_players[player_id].socket
         self.Q_messages_send.put((key, message))
 
     def create_buttons_frame(self):
         # creating widgets
+        img_player_info = PhotoImage(file='images/buttons/user-info.png')
+        img_player_disconnect = PhotoImage(file='images/buttons/delete-user.png')
+        img_player_disconnect_all = PhotoImage(file='images/buttons/delete-all.png')
+
         F_buttons = Frame(self.F_main_menu)
-        B_player_info = Button(F_buttons, text='Player info', font=self.font,
+        B_player_info = Button(F_buttons, image=img_player_info, font=self.font,bd=0,
                                command=self.get_player_info)
-        B_disconnectPlayer = Button(F_buttons, text='Disconnect a player', font=self.font,
+        B_disconnect_player = Button(F_buttons, image=img_player_disconnect, font=self.font,bd=0,
                                     command=self.delete_selected_player_from_listbox)
-        B_disconnectAll = Button(F_buttons, text='Disconnect all players', font=self.font,
+        B_disconnect_all = Button(F_buttons, image=img_player_disconnect_all, font=self.font,bd=0,
                                  command=self.delete_all_players_from_listbox)
+
+        B_player_info.image = img_player_info
+        B_disconnect_player.image = img_player_disconnect
+        B_disconnect_all.image = img_player_disconnect_all
+
         # place in grid
         B_player_info.grid(row=0, column=0, sticky='ew')
-        B_disconnectPlayer.grid(row=1, column=0, pady=self.pad_y, sticky='ew')
-        B_disconnectAll.grid(row=2, column=0, sticky='ew')
+        B_disconnect_player.grid(row=1, column=0, pady=self.pad_y*2, sticky='ew')
+        B_disconnect_all.grid(row=2, column=0, sticky='ew')
+
+        CreateToolTip(B_player_info,text="Get player info")
+        CreateToolTip(B_disconnect_player, text="Disconnect selected player")
+        CreateToolTip(B_disconnect_all, text="Disconnect all players")
         # add to widgets list
-        self.add_widgets(B_disconnectPlayer, B_disconnectAll, B_player_info)
+        self.add_widgets(B_disconnect_player, B_disconnect_all, B_player_info)
         return F_buttons
 
-    def edit_server_window(self):
+    def create_player_info_frame(self):
+        L_title = Label(self.F_main_menu, text="Player info", font=self.title_font)
+        L_player_id = Label(self.F_main_menu, text="Player id: ", font=self.font)
+        L_player_name = Label(self.F_main_menu, text="Player_name", font=self.font)
+        B_to_main_menu = Button(self.F_player_info,text="Main menu")
+
+    def edit_server_frame(self):
         # creating widgets
         F_addPlayer = self.create_add_player_frame(self.F_main_menu)
         L_title = Label(self.F_main_menu, text="R.P.S - Server", font=self.title_font)
@@ -127,16 +156,29 @@ class ServerWindow(WindowTemplate):
         L_gif.load('images/gif/Rock-Paper-Scissors-smaller.gif')
         # place in Frame
         self.F_main_menu.pack()
-        L_title.pack(pady=self.pad_y * 2)
-        self.listbox.frame.pack(pady=self.pad_y)
-        F_addPlayer.pack(pady=self.pad_y)
-        F_buttons.pack(pady=self.pad_y)
-        L_gif.pack(pady=self.pad_y, padx=self.pad_x)
+        L_title.grid(row=0,column=0,columnspan=2,pady=self.pad_y * 2)
+        self.listbox.frame.grid(row=1,column=0,columnspan=1,pady=self.pad_y)
+        F_buttons.grid(row=1, column=1, columnspan=1, pady=self.pad_y,sticky='wn')
+        F_addPlayer.grid(row=2,column=0,columnspan=2,pady=self.pad_y,sticky='we')
+
+        L_gif.grid(row=3,column=0,columnspan=2,pady=self.pad_y, padx=self.pad_x)
         # add to widgets list
         self.add_widgets(L_gif, L_title, self.listbox, self.F_main_menu, F_buttons)
 
     def get_player_info(self):
-        pass
+        self.click_sound_valid()
+        selected_player = self.listbox.selection()
+        if selected_player:
+            player_info = self.listbox.item(selected_player[0]).get("values")
+            player_id = player_info[0]
+            message = Message(player_id)
+            message.set_message_game_info_request()
+            self.send_message_to_player(player_id, message)
+            player_name = player_info[1]
+
+            logging.info('Getting player id: ' + str(player_id) + ', name: ' + player_name + 'information')
+        else:
+            self.click_sound_error()
 
     def exit_app(self):
         self.delete_all_players_from_listbox()

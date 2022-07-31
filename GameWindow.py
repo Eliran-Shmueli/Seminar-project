@@ -16,6 +16,7 @@ class GameWindow(WindowTemplate):
 
     def __init__(self, player_id, player_name):
         super().__init__('Client-- Id - ' + str(player_id) + ', Name - ' + player_name)
+        self.B_start = None
         self.game_info = Game_info(player_id, player_name)
         self.image_type = "animated_"
         self.round_count = 1
@@ -122,6 +123,10 @@ class GameWindow(WindowTemplate):
             self.run_call = False
             self.event.set()
             super().exit_app()
+        if message_received.is_message_game_info_request():
+            game_info = self.game_info.create_copy()
+            self.message.set_message_game_info_request()
+            self.send_info(self.message,game_info)
         if message_received.is_message_accepted():
             self.config_bottom_button(state='normal', func=lambda: self.start_game())
         if message_received.is_message_choose():
@@ -161,11 +166,15 @@ class GameWindow(WindowTemplate):
         creates the main menu frame
         :return: main menu frame
         """
+        
         # create widgets
         F_main_menu = Frame(self.root)
-        # adding image
+        # adding images
+        img_start = PhotoImage(file='images/buttons/start-button.png')
         img_main_menu = PhotoImage(file=r"images/event-featured-the-legend-of-rock-paper-scissors-1634241914.png")
         img_main_menu = img_main_menu.subsample(2, 2)
+        
+        self.B_start=Button(F_main_menu, image=img_start, bd=0)
         L_img = Label(F_main_menu, image=img_main_menu)
         L_img.image = img_main_menu
 
@@ -287,6 +296,7 @@ class GameWindow(WindowTemplate):
         """
         starting the game
         """
+
         self.config_bottom_button('Go!!!', 'disabled', lambda: self.play_game())
         self.reset_choices()
         self.message.set_message_choose()
@@ -468,6 +478,7 @@ class GameWindow(WindowTemplate):
         self.load_image('images/winner.jpg', 500, "win")
         self.load_image('images/you_lose.png', 500, "lose")
         self.load_image('images/tie.gif', 500, "tie")
+
 
     def load_image(self, path, size, name):
         """

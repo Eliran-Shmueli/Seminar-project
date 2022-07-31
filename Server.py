@@ -85,6 +85,8 @@ class Server:
             del self.dic_players[message_received.id]
             self.sel.unregister(key.fileobj)
             key.fileobj.close()
+        elif message_received.is_message_game_info_request():
+            self.Q_messages_received.put((key, message_received))
         else:
             if message_received.is_message_join_request():
                 player_id = message_received.id
