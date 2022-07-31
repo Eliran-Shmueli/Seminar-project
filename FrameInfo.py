@@ -47,7 +47,8 @@ class FrameInfo(Frame):
         self.list_widgets=[self.L_title, self.L_player_id, self.L_player_name, self.L_num_games, self.L_num_rounds, self.B_to_main_menu]
 
     def plot(self):
-        # the figure that will contain the plot
+       #https://www.geeksforgeeks.org/how-to-embed-matplotlib-charts-in-tkinter-gui/
+       # the figure that will contain the plot
         fig = Figure(figsize=(4,4),
                      dpi=100)
 
@@ -63,7 +64,7 @@ class FrameInfo(Frame):
         # creating the Tkinter canvas
         # containing the Matplotlib figure
         canvas = FigureCanvasTkAgg(fig, master=self)
-        canvas.
+
 
         # placing the canvas on the Tkinter window
         canvas.get_tk_widget().grid(row=5,columnspan=2)
