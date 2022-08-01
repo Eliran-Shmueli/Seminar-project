@@ -21,7 +21,7 @@ class ServerWindow(WindowTemplate):
 
     def __init__(self, window_name):
         super().__init__(window_name)
-        self.root.attributes("-topmost", False) # most be False in ordr for ToolTip to work properly
+        self.root.attributes("-topmost", False) # most be False in order for ToolTip to work properly
         self.dic_players = {}
         self.player_id_count = 0
         self.load_background_music(0, 'sounds/best-time-112194.wav', -1)
