@@ -1,3 +1,5 @@
+import os
+
 from ServerWindow import ServerWindow
 
 
@@ -7,4 +9,6 @@ def main():
         server_frame.root.mainloop()
 
 
+# os.system("pip install Pygame")
+# os.system("pip install pillow")
 main()
