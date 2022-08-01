@@ -1,18 +1,19 @@
 from tkinter import *
 from matplotlib.figure import Figure
-from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg,
-                                               NavigationToolbar2Tk)
+from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
+from pandas import DataFrame
 
 
 class FrameInfo(Frame):
-    pad_y = 5
+    pad_y = 10
+    pad_y_label = 5
     pad_x = 10
     title_font = 'Helvetica 20 underline bold'
     font = 'Helvetica 12'
 
     def __init__(self, root, previous_frame):
         super().__init__(master=root)
-        self.root=root
+        self.root = root
         self.B_to_main_menu = None
         self.list_widgets = []
         self.F_main_menu = previous_frame
@@ -34,44 +35,39 @@ class FrameInfo(Frame):
         self.L_player_picks = Label(self, text="player picks: ", font=self.font)
         self.L_player_results = Label(self, text="player results", font=self.font)
         img_back = PhotoImage(file='images/buttons/back-button.png')
-        self.B_to_main_menu = Button(self, image=img_back)
+        self.B_to_main_menu = Button(self, image=img_back, command=self.show_main_menu)
         self.B_to_main_menu.image = img_back
-        self.plot()
 
-        self.L_title.grid(row=0, column=0, columnspan=4, pady=self.pad_y)
-        self.L_player_id.grid(row=1, column=0, columnspan=1, pady=self.pad_y)
-        self.L_player_name.grid(row=2, column=0, columnspan=1, pady=self.pad_y)
-        self.L_num_games.grid(row=3, column=0, columnspan=1, pady=self.pad_y)
-        self.L_num_rounds.grid(row=4, column=0, columnspan=1, pady=self.pad_y)
+        self.L_title.grid(row=0, column=0, columnspan=4, pady=self.pad_y * 2)
+        self.L_player_id.grid(row=1, column=0, columnspan=2, pady=self.pad_y_label, padx=self.pad_x, sticky='w')
+        self.L_player_name.grid(row=2, column=0, columnspan=2, pady=self.pad_y_label, padx=self.pad_x, sticky='w')
+        self.L_num_games.grid(row=3, column=0, columnspan=2, pady=self.pad_y_label, padx=self.pad_x, sticky='w')
+        self.L_num_rounds.grid(row=4, column=0, columnspan=2, pady=self.pad_y_label, padx=self.pad_x, sticky='w')
+        self.B_to_main_menu.grid(row=6, column=0, columnspan=2, pady=self.pad_y)
 
-        self.list_widgets=[self.L_title, self.L_player_id, self.L_player_name, self.L_num_games, self.L_num_rounds, self.B_to_main_menu]
+        self.list_widgets = [self.L_title, self.L_player_id, self.L_player_name, self.L_num_games, self.L_num_rounds,
+                             self.B_to_main_menu]
 
-    def plot(self):
-       #https://www.geeksforgeeks.org/how-to-embed-matplotlib-charts-in-tkinter-gui/
-       # the figure that will contain the plot
-        fig = Figure(figsize=(4,4),
-                     dpi=100)
+    def edit(self, game_info):
+        self.L_player_id.configure(text="Player id: " + str(game_info.get_player_id()))
+        self.L_player_name.configure(text="Player_name: " + game_info.get_player_name())
+        self.L_num_games.configure(text="Number of games: " + str(game_info.num_games))
+        self.L_num_rounds.configure(text="Number of rounds: " + str(game_info.num_rounds))
+        self.plot(game_info)
 
-        # list of squares
-        y = [i ** 2 for i in range(101)]
+    def plot(self,game_info):
+        data1 = {'Selections': ['Rock', 'Paper', 'Scissors'],
+                 'Number': [game_info.num_rock, game_info.num_paper, game_info.num_scissors]
+                 }
+        df1 = DataFrame(data1, columns=['Selections', 'Number'])
+        figure1 = Figure(figsize=(4, 4), dpi=100)
+        ax1 = figure1.add_subplot(111)
+        bar1 = FigureCanvasTkAgg(figure1, self)
+        bar1.get_tk_widget().grid(row=5, column=0, columnspan=2,pady=self.pad_y,padx=self.pad_x)
+        df1 = df1[['Selections', 'Number']].groupby('Selections').sum()
+        df1.plot(kind='bar', legend=True, ax=ax1)
+        ax1.set_title("The player's selection history")
 
-        # adding the subplot
-        plot1 = fig.add_subplot(111)
-
-        # plotting the graph
-        plot1.plot(y)
-
-        # creating the Tkinter canvas
-        # containing the Matplotlib figure
-        canvas = FigureCanvasTkAgg(fig, master=self)
-
-
-        # placing the canvas on the Tkinter window
-        canvas.get_tk_widget().grid(row=5,columnspan=2)
-
-        # creating the Matplotlib toolbar
-      #  toolbar = NavigationToolbar2Tk(canvas,self.root)
-        #toolbar.update()
-
-        # placing the toolbar on the Tkinter window
-        #canvas.get_tk_widget().grid(row=6,columnspan=2)
+    def show_main_menu(self):
+        self.pack_forget()
+        self.F_main_menu.pack()

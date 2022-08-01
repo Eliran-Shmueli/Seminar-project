@@ -25,6 +25,7 @@ class WindowTemplate:
         self.event_id = None
         self.menubar = None
         self.root = Tk()
+        self.root.attributes("-topmost", True)
         self.Q_messages_received = queue.Queue()
         self.Q_messages_send = queue.Queue()
         self.widgets_dic = {"label": [], "button": [], "listbox": [], "frame": []}

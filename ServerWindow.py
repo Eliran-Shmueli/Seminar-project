@@ -15,7 +15,6 @@ from Server import Server
 from Message import Message
 
 
-
 class ServerWindow(WindowTemplate):
     pad_y = 10
     pad_x = 10
@@ -27,7 +26,7 @@ class ServerWindow(WindowTemplate):
         self.player_id_count = 0
         self.load_background_music(0, 'sounds/best-time-112194.wav', -1)
         self.F_main_menu = Frame(self.root)
-        self.F_player_info = FrameInfo(self.root,self.F_main_menu)
+        self.F_player_info = FrameInfo(self.root, self.F_main_menu)
         self.listbox = ListBoxTemp(self.F_main_menu, 6, 'browse')
         self.edit_listbox()
         self.edit_server_frame()
@@ -61,9 +60,8 @@ class ServerWindow(WindowTemplate):
         if message.is_message_game_info_request() and message.is_message_have_data():
             game_info = message.data
             self.F_main_menu.pack_forget()
+            self.F_player_info.edit(game_info)
             self.F_player_info.pack()
-
-
 
     def accept_request_to_connect_from_client(self, key, message):
         new_player_id = self.add_new_player(message.data)
