@@ -27,6 +27,7 @@ class ServerWindow(WindowTemplate):
         self.load_background_music(0, 'sounds/best-time-112194.wav', -1)
         self.F_main_menu = Frame(self.root)
         self.F_player_info = FrameInfo(self.root, self.F_main_menu)
+        self.add_widgets(self.F_player_info.list_widgets)
         self.listbox = ListBoxTemp(self.F_main_menu, 6, 'browse')
         self.edit_listbox()
         self.edit_server_frame()

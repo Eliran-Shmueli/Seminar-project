@@ -8,6 +8,7 @@ import pygame
 from tkinter import ttk, messagebox
 import time
 
+from FrameInfo import FrameInfo
 from ToolTip import CreateToolTip
 
 
@@ -161,8 +162,11 @@ creates and commands to it
                 self.widgets_dic["button"].append(widget)
             if (type(widget) == ListBoxTemp) or (type(widget) == Entry):
                 self.widgets_dic["listbox"].append(widget)
-            if (type(widget) == Frame) or (type(widget) == Tk):
+            if (type(widget) == Frame) or (type(widget) == Tk)or (type(widget) == FrameInfo):
                 self.widgets_dic["frame"].append(widget)
+            if type(widget) == list:
+                for obj in widget:
+                    self.add_widgets(obj)
 
     def create_add_player_frame(self, root):
         F_addPlayer = Frame(root)

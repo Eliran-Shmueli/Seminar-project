@@ -19,7 +19,7 @@ class Game_info:
         self.num_games = plus_one(self.num_games)
 
     def increase_num_rounds(self):
-        self.num_rounds = plus_one(self.num_games)
+        self.num_rounds = plus_one(self.num_rounds)
 
     def increase_num_wins(self):
         self.num_wins = plus_one(self.num_wins)

@@ -16,10 +16,6 @@ class GameWindow(WindowTemplate):
 
     def __init__(self, player_id, player_name):
         super().__init__('Client-- Id - ' + str(player_id) + ', Name - ' + player_name)
-        self.B_replay = None
-        self.B_next = None
-        self.B_play = None
-        self.B_start = None
         self.game_info = Game_info(player_id, player_name)
         self.image_type = "animated_"
         self.round_count = 1
@@ -48,6 +44,10 @@ class GameWindow(WindowTemplate):
         self.B_paper = None
         self.B_scissors = None
         self.B_bottom = None
+        self.B_replay = None
+        self.B_next = None
+        self.B_play = None
+        self.B_start = None
 
         self.call_after_func()
         self.message = Message(self.game_info.get_player_id())
@@ -71,7 +71,6 @@ class GameWindow(WindowTemplate):
         self.F_final_result = self.create_final_result_frame()
         self.F_game = self.create_game_frame()
         self.add_action_to_menubar()
-
 
     def init_client_server(self):
         """
@@ -117,7 +116,7 @@ class GameWindow(WindowTemplate):
         if message_received.is_message_game_info_request():
             game_info = self.game_info.create_copy()
             self.message.set_message_game_info_request()
-            self.send_info(self.message,game_info)
+            self.send_info(self.message, game_info)
         if message_received.is_message_accepted():
             self.B_start.configure(state='normal')
         if message_received.is_message_choose():
@@ -136,7 +135,7 @@ class GameWindow(WindowTemplate):
         add selected frame to the top grid
         :param frame: selected frame
         """
-        frame.grid(row=0, column=0,pady=self.pad_y)
+        frame.grid(row=0, column=0, pady=self.pad_y)
 
     def config_bottom_button(self, text='', state='', func=None):
         """
@@ -157,7 +156,7 @@ class GameWindow(WindowTemplate):
         creates the main menu frame
         :return: main menu frame
         """
-        
+
         # create widgets
         F_main_menu = Frame(self.root)
         # adding images
@@ -165,18 +164,18 @@ class GameWindow(WindowTemplate):
         img_main_menu = PhotoImage(file=r"images/event-featured-the-legend-of-rock-paper-scissors-1634241914.png")
         img_main_menu = img_main_menu.subsample(2, 2)
 
-        self.B_start=Button(F_main_menu, image=img_start, state="disabled",bd=0,command=self.start_game)
+        self.B_start = Button(F_main_menu, image=img_start, state="disabled", bd=0, command=self.start_game)
         L_img = Label(F_main_menu, image=img_main_menu)
         L_img.image = img_main_menu
-        self.B_start.image=img_start
+        self.B_start.image = img_start
 
         # add to root
-        L_img.pack(pady=self.pad_y,padx=self.pad_x)
+        L_img.pack(pady=self.pad_y, padx=self.pad_x)
         self.B_start.pack(pady=self.pad_y)
         self.show_frame_in_grid(F_main_menu)
 
         # add to dict
-        self.add_widgets(F_main_menu, L_img,self.B_start)
+        self.add_widgets(F_main_menu, L_img, self.B_start)
         return F_main_menu
 
     def create_scores_frame(self, F_game):
@@ -260,7 +259,7 @@ class GameWindow(WindowTemplate):
 
         # load image
         img_forward = PhotoImage(file='images/buttons/replay-button.png')
-        self.B_replay = Button(F_final_result, image=img_forward, bd=0, command= self.reset_game)
+        self.B_replay = Button(F_final_result, image=img_forward, bd=0, command=self.reset_game)
         self.B_replay.image = img_forward
 
         self.L_final_result_player_score.grid(row=0, column=0)
@@ -295,10 +294,10 @@ class GameWindow(WindowTemplate):
         L_round_result_pc.grid(row=1, column=2, pady=self.pad_y, padx=self.pad_x)
         self.L_round_result_player_choice_img.grid(row=2, column=0, padx=self.pad_x)
         self.L_round_result_pc_choice_img.grid(row=2, column=2, padx=self.pad_x)
-        self.B_next.grid(row=3, column=1,pady=self.pad_y,)
+        self.B_next.grid(row=3, column=1, pady=self.pad_y, )
 
         self.add_widgets(F_round_result, self.L_round_result_title, L_round_result_player, L_round_result_pc,
-                         self.L_round_result_player_choice_img, self.L_round_result_pc_choice_img,self.B_next)
+                         self.L_round_result_player_choice_img, self.L_round_result_pc_choice_img, self.B_next)
         return F_round_result
 
     def start_game(self):
@@ -394,7 +393,8 @@ class GameWindow(WindowTemplate):
         """
         updates the titles and image at the final result frame, according to the scores
         """
-        self.L_final_result_player_score.configure(text=self.game_info.get_player_name() + ": " + str(self.player_score))
+        self.L_final_result_player_score.configure(
+            text=self.game_info.get_player_name() + ": " + str(self.player_score))
         self.L_final_result_pc_score.configure(text="Pc: " + str(self.pc_score))
         if self.player_score == self.pc_score:
             logging.info('The game ended in a tie')
@@ -434,20 +434,27 @@ class GameWindow(WindowTemplate):
 
         :return: the result of a round
         """
+        self.game_info.increase_num_rounds()
+        self.increase_selection_counter()
         if self.player_choice == self.pc_choice:
             return "tie"
 
         if self.player_choice == "rock":
-            self.game_info.increase_num_rock()
             return self.result("scissors")
 
         elif self.player_choice == "paper":
-            self.game_info.increase_num_paper()
             return self.result("rock")
 
         else:
-            self.game_info.increase_num_scissors()
             return self.result("paper")
+
+    def increase_selection_counter(self):
+        if self.player_choice == "rock":
+            self.game_info.increase_num_rock()
+        elif self.player_choice == "paper":
+            self.game_info.increase_num_paper()
+        else:
+            self.game_info.increase_num_scissors()
 
     def result(self, weak_pick):
         """
@@ -484,7 +491,6 @@ class GameWindow(WindowTemplate):
         self.load_image('images/winner.jpg', 500, "win")
         self.load_image('images/you_lose.png', 500, "lose")
         self.load_image('images/tie.gif', 500, "tie")
-
 
     def load_image(self, path, size, name):
         """
