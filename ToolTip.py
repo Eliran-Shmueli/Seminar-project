@@ -19,6 +19,7 @@ class ToolTip(object):
         x = x + self.widget.winfo_rootx() + 25
         y = y + cy + self.widget.winfo_rooty() + 33
         self.tipwindow = tw = Toplevel(self.widget)
+        self.tipwindow.attributes("-topmost", True)
         tw.wm_overrideredirect(1)
         tw.wm_geometry("+%d+%d" % (x, y))
         label = Label(tw, text=self.text, justify=LEFT,
