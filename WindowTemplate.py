@@ -171,7 +171,7 @@ creates and commands to it
     def create_add_player_frame(self, root):
         F_addPlayer = Frame(root)
 
-        L_addPlayer = Label(F_addPlayer, text='Player name:', font=self.font, padx=self.pad_x)
+        L_addPlayer = Label(F_addPlayer, text="Player's name:", font=self.font, padx=self.pad_x)
         E_playerName = Entry(F_addPlayer, font=self.font)
         img_add_player = PhotoImage(file='images/buttons/add-user.png')
         B_addPlayer = Button(F_addPlayer,image=img_add_player, font=self.font,bd=0,
@@ -183,7 +183,7 @@ creates and commands to it
         E_playerName.pack(side=LEFT)
         B_addPlayer.pack(side=LEFT, padx=self.pad_x)
 
-        CreateToolTip(B_addPlayer, text="Add player")
+        CreateToolTip(B_addPlayer, "Add player")
         # add to widgets list
         self.add_widgets(B_addPlayer, L_addPlayer, E_playerName, F_addPlayer)
         return F_addPlayer

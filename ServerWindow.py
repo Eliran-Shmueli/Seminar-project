@@ -21,7 +21,7 @@ class ServerWindow(WindowTemplate):
 
     def __init__(self, window_name):
         super().__init__(window_name)
-        self.server = None
+        self.root.attributes("-topmost", False) # most be False in ordr for ToolTip to work properly
         self.dic_players = {}
         self.player_id_count = 0
         self.load_background_music(0, 'sounds/best-time-112194.wav', -1)
@@ -72,8 +72,8 @@ class ServerWindow(WindowTemplate):
         self.send_message_to_player(new_player_id, message_to_send)
 
     def edit_listbox(self):
-        self.listbox.heading('id', text='Player id', anchor=W)
-        self.listbox.heading('name', text='Player name', anchor=W)
+        self.listbox.heading('id', text="Player's id", anchor=W)
+        self.listbox.heading('name', text="Player's name", anchor=W)
 
     def delete_selected_player_from_listbox(self):
         self.click_sound_valid()
