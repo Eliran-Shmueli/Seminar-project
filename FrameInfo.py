@@ -32,10 +32,8 @@ class FrameInfo(Frame):
         self.L_player_name = Label(self, text="Player's name", font=self.font)
         self.L_num_games = Label(self, text="Number of games: ", font=self.font)
         self.L_num_rounds = Label(self, text="Number of rounds:", font=self.font)
-        self.L_player_picks = Label(self, text="player picks: ", font=self.font)
-        self.L_player_results = Label(self, text="player results", font=self.font)
         img_back = PhotoImage(file='images/buttons/back-button.png')
-        self.B_to_main_menu = Button(self, image=img_back, command=self.show_main_menu,bd=0)
+        self.B_to_main_menu = Button(self, image=img_back, command=self.show_main_menu, bd=0)
         self.B_to_main_menu.image = img_back
 
         self.L_title.grid(row=0, column=0, columnspan=4, pady=self.pad_y * 2)
@@ -46,7 +44,7 @@ class FrameInfo(Frame):
         self.B_to_main_menu.grid(row=6, column=0, columnspan=4, pady=self.pad_y)
 
         self.list_widgets = [self.L_title, self.L_player_id, self.L_player_name, self.L_num_games, self.L_num_rounds,
-                             self.B_to_main_menu,self]
+                             self.B_to_main_menu, self]
 
     def edit(self, game_info):
         self.L_player_id.configure(text="Player's id: " + str(game_info.get_player_id()))
