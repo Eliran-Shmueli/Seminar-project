@@ -27,9 +27,9 @@ class FrameInfo(Frame):
         self.create_player_info_frame()
 
     def create_player_info_frame(self):
-        self.L_title = Label(self, text="Player info", font=self.title_font)
-        self.L_player_id = Label(self, text="Player id: ", font=self.font)
-        self.L_player_name = Label(self, text="Player_name", font=self.font)
+        self.L_title = Label(self, text="Player's info", font=self.title_font)
+        self.L_player_id = Label(self, text="Player's id: ", font=self.font)
+        self.L_player_name = Label(self, text="Player's name", font=self.font)
         self.L_num_games = Label(self, text="Number of games: ", font=self.font)
         self.L_num_rounds = Label(self, text="Number of rounds:", font=self.font)
         self.L_player_picks = Label(self, text="player picks: ", font=self.font)
@@ -49,8 +49,8 @@ class FrameInfo(Frame):
                              self.B_to_main_menu,self]
 
     def edit(self, game_info):
-        self.L_player_id.configure(text="Player id: " + str(game_info.get_player_id()))
-        self.L_player_name.configure(text="Player_name: " + game_info.get_player_name())
+        self.L_player_id.configure(text="Player's id: " + str(game_info.get_player_id()))
+        self.L_player_name.configure(text="Player's name: " + game_info.get_player_name())
         self.L_num_games.configure(text="Number of games: " + str(game_info.num_games))
         self.L_num_rounds.configure(text="Number of rounds: " + str(game_info.num_rounds))
         self.plot(game_info)
