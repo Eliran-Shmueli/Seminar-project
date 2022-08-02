@@ -9,5 +9,5 @@ def main():
 
 
 # os.system("pip install Pygame")
-# os.system("pip install pillow")
+# os.system("pip install Pillow")
 main()

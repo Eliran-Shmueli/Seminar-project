@@ -4,7 +4,6 @@ from Client import Client
 from WindowTemplate import WindowTemplate
 from tkinter import *
 from PIL import ImageTk, Image
-from Player import Player
 import logging
 from Message import Message
 import threading
