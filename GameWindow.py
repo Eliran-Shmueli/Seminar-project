@@ -499,7 +499,7 @@ class GameWindow(WindowTemplate):
         :param name: key for the dict
         """
         image = Image.open(path)
-        image = image.resize((size, size), Image.Resampling.LANCZOS)
+        image = image.resize((size, size), resample= Image.LANCZOS)
         Photo = ImageTk.PhotoImage(image)
         self.images[name] = Photo
 
