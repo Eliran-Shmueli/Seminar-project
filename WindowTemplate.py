@@ -80,11 +80,11 @@ class WindowTemplate:
 edit window template
         :param window_name: the title of the window
         """
-        self.root.geometry('+0+0')
-        self.root.resizable(False, False)
+        self.root.geometry('800x800')
+        self.root.resizable(True, True)
         self.root.title(window_name)
-        self.root.columnconfigure(3, weight=1)
-        self.root.columnconfigure(4, weight=3)
+        self.root.columnconfigure(0, weight=1)
+        self.root.rowconfigure(0, weight=1)
         self.root.iconbitmap(r'images/icons/mushroom.ico')
         self.root.protocol("WM_DELETE_WINDOW", self.exit_app)
         self.add_menubar()

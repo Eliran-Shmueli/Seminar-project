@@ -46,18 +46,26 @@ class GameWindow(WindowTemplate):
         self.B_replay = None
         self.B_next = None
         self.B_play = None
-        self.B_start = None
+
 
         self.call_after_func()
         self.message = Message(self.game_info.get_player_id())
-        self.check_info()
+        self.init_server()
 
-    def check_info(self):
+    def init_server(self):
         self.init_frames()
         self.message.set_message_join_request()
         self.init_client_server()
         self.send_info(self.message)
         self.init_run()
+
+    def init_run(self):
+        """
+        adds bottom button to root and start mainloop
+        """
+
+        self.root.mainloop()
+        logging.info('Game window started')
 
     def init_frames(self):
         """
@@ -80,13 +88,7 @@ class GameWindow(WindowTemplate):
                                                                  self.Q_messages_received, self.event))
         T_server_client.start()
 
-    def init_run(self):
-        """
-        adds bottom button to root and start mainloop
-        """
 
-        self.root.mainloop()
-        logging.info('Game window started')
 
     def check_queue_received(self):
         if self.Q_messages_received.empty() is False:
@@ -117,7 +119,7 @@ class GameWindow(WindowTemplate):
             self.message.set_message_game_info_request()
             self.send_info(self.message, game_info)
         if message_received.is_message_accepted():
-            self.B_start.configure(state='normal')
+            self.start_game()
         if message_received.is_message_choose():
             self.pc_choice = message_received.data
             self.L_pc_pick.configure(text="pc chose")
@@ -162,19 +164,15 @@ class GameWindow(WindowTemplate):
         img_start = PhotoImage(file='images/buttons/start-button.png')
         img_main_menu = PhotoImage(file=r"images/event-featured-the-legend-of-rock-paper-scissors-1634241914.png")
         img_main_menu = img_main_menu.subsample(2, 2)
-
-        self.B_start = Button(F_main_menu, image=img_start, state="disabled", bd=0, command=self.start_game)
         L_img = Label(F_main_menu, image=img_main_menu)
         L_img.image = img_main_menu
-        self.B_start.image = img_start
 
         # add to root
         L_img.pack(pady=self.pad_y, padx=self.pad_x)
-        self.B_start.pack(pady=self.pad_y)
         self.show_frame_in_grid(F_main_menu)
 
         # add to dict
-        self.add_widgets(F_main_menu, L_img, self.B_start)
+        self.add_widgets(F_main_menu, L_img)
         return F_main_menu
 
     def create_scores_frame(self, F_game):
