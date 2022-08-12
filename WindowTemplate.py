@@ -23,7 +23,7 @@ class WindowTemplate:
     num_of_channels = 1
     name_length = 12
 
-    def __init__(self, window_name):
+    def __init__(self, window_name, is_server):
 
         self.event_id = None
         self.menubar = None
@@ -39,7 +39,7 @@ class WindowTemplate:
                             level=logging.INFO)
         print('thread id ' + str(threading.get_ident()))
         self.init_background_music()
-        self.edit_template(window_name)
+        self.edit_template(window_name, is_server)
         self.add_widgets(self.root)
 
     def clear_dict_widgets(self):
@@ -77,20 +77,16 @@ class WindowTemplate:
         winsound.PlaySound('sounds/sci-fi-voiceclip-894-sound-effect-goodbye.wav',
                            winsound.SND_FILENAME | winsound.SND_ASYNC)
 
-    def edit_template(self, window_name):
+    def edit_template(self, window_name, is_server):
         """
 edit window template
         :param window_name: the title of the window
         """
-        # get the screen dimension
-        screen_width = self.root.winfo_screenwidth()
-        screen_height = self.root.winfo_screenheight()
-        # find the center point
-        center_x = int(screen_width / 2 - self.window_width / 2)
-        center_y = int(screen_height / 2 - self.window_height / 2)
-        # set the position of the window to the center of the screen
-        # self.root.geometry(f'{self.window_width}x{self.window_height}+{center_x}+{center_y}')
-        self.root.geometry('+0+0')
+        if is_server:
+            self.root.geometry('+0+0')
+        else:
+            self.config_geometry()
+
         self.root.resizable(True, True)
         self.root.title(window_name)
         self.root.columnconfigure(0, weight=1)
@@ -98,6 +94,16 @@ edit window template
         self.root.iconbitmap(r'images/icons/mushroom.ico')
         self.root.protocol("WM_DELETE_WINDOW", self.exit_app)
         self.add_menubar()
+
+    def config_geometry(self):
+        # get the screen dimension
+        screen_width = self.root.winfo_screenwidth()
+        screen_height = self.root.winfo_screenheight()
+        # find the center point
+        center_x = int(screen_width / 2 - self.window_width / 2)
+        center_y = int(screen_height / 2 - self.window_height / 2)
+        # set the position of the window to the center of the screen
+        self.root.geometry(f'{self.window_width}x{self.window_height}+{center_x}+{center_y}')
 
     def add_menubar(self):
         """
@@ -172,7 +178,7 @@ creates and commands to it
                 self.widgets_dic["button"].append(widget)
             if (type(widget) == ListBoxTemp) or (type(widget) == Entry):
                 self.widgets_dic["listbox"].append(widget)
-            if (type(widget) == Frame) or (type(widget) == Tk)or (type(widget) == FrameInfo):
+            if (type(widget) == Frame) or (type(widget) == Tk) or (type(widget) == FrameInfo):
                 self.widgets_dic["frame"].append(widget)
             if type(widget) == list:
                 for obj in widget:

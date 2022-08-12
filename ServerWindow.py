@@ -20,7 +20,7 @@ class ServerWindow(WindowTemplate):
     pad_x = 10
 
     def __init__(self, window_name):
-        super().__init__(window_name)
+        super().__init__(window_name,True)
         self.root.geometry('+0+0')
         self.L_error_msg = None
         self.dic_players = {}

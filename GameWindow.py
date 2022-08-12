@@ -16,7 +16,7 @@ class GameWindow(WindowTemplate):
     num_music_loops = 0
 
     def __init__(self, player_id, player_name):
-        super().__init__('Client-- Id - ' + str(player_id) + ', Name - ' + player_name)
+        super().__init__('Client-- Id - ' + str(player_id) + ', Name - ' + player_name,False)
         self.game_info = Game_info(player_id, player_name)
         self.image_type = "animated_"
         self.round_count = 1
