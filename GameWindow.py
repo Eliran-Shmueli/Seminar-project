@@ -120,7 +120,7 @@ class GameWindow(WindowTemplate):
             self.start_game()
         if message_received.is_message_choose():
             self.pc_choice = message_received.data
-            self.L_pc_pick.configure(text="pc already selected")
+            self.L_pc_pick.configure(text="Pc already selected")
             self.check_if_everybody_choose()
         if message_received.is_message_goodbye():
             self.message.set_message_goodbye()
@@ -249,7 +249,7 @@ class GameWindow(WindowTemplate):
         self.L_round_result_player_choice_img = GifLabel(F_round_result)
         self.L_round_result_pc_choice_img = GifLabel(F_round_result)
         self.L_player_pick = Label(F_round_result, text="Waiting for you to select", font=self.font)
-        self.L_pc_pick = Label(F_round_result, text="Waiting for pc to select", font=self.font)
+        self.L_pc_pick = Label(F_round_result, text="Waiting for Pc to select", font=self.font)
 
         img_forward = PhotoImage(file='images/buttons/next-button.png')
         self.B_next = Button(F_round_result, image=img_forward, bd=0, state="disabled",command=self.next_stage)
@@ -335,7 +335,7 @@ class GameWindow(WindowTemplate):
             self.message.set_message_choose()
             self.send_info(self.message)
             self.update_scores_and_round_labels()
-        self.L_pc_pick.configure(text="Waiting for pc to choose")
+        self.L_pc_pick.configure(text="Waiting for Pc to choose")
         self.L_player_pick.configure(text="Waiting for you to select")
 
     def reset_choices(self):

@@ -177,37 +177,6 @@ creates and commands to it
                 for obj in widget:
                     self.add_widgets(obj)
 
-    def create_add_player_frame(self, root):
-        F_addPlayer = Frame(root)
-
-        L_addPlayer = Label(F_addPlayer, text="Player's name:", font=self.font, padx=self.pad_x)
-        E_playerName = Entry(F_addPlayer, font=self.font)
-        img_add_player = PhotoImage(file='images/buttons/add-user.png')
-        B_addPlayer = Button(F_addPlayer,image=img_add_player, font=self.font,bd=0,
-                             command=lambda: self.set_player_name(E_playerName))
-        B_addPlayer.image = img_add_player
-
-        # place in F_addPlayer
-        L_addPlayer.pack(side=LEFT)
-        E_playerName.pack(side=LEFT)
-        B_addPlayer.pack(side=LEFT, padx=self.pad_x)
-
-        CreateToolTip(B_addPlayer, "Add player")
-        # add to widgets list
-        self.add_widgets(B_addPlayer, L_addPlayer, E_playerName, F_addPlayer)
-        return F_addPlayer
-
-    def set_player_name(self, E_playerName):
-        name = E_playerName.get()
-        if (len(name) != 0) and (name.isalpha() and (len(name) <= self.name_length)):
-            self.click_sound_valid()
-            E_playerName.delete(0, 'end')
-            self.add_new_player(name)
-        else:
-            self.click_sound_error()
-            messagebox.showerror('R.P.S - Server',
-                                 'Error: Name can be only with letters, no spaces and in max length of 12')
-
     def check_queue_received(self):
         pass
 
