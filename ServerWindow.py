@@ -156,7 +156,7 @@ class ServerWindow(WindowTemplate):
         # adding image
         L_gif.load('images/gif/Rock-Paper-Scissors-smaller.gif')
         # place in Frame
-        self.F_main_menu.grid(row=0, column=0)
+        self.F_main_menu.grid(row=0, column=0,padx=self.pad_x)
         L_title.grid(row=0, column=0, columnspan=2, pady=self.pad_y * 2)
         self.listbox.frame.grid(row=1, column=0, columnspan=1, pady=self.pad_y)
         F_buttons.grid(row=1, column=1, columnspan=1, pady=self.pad_y, sticky='wn')
