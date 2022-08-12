@@ -98,5 +98,5 @@ class FrameInfo(Frame):
         canvas_results.get_tk_widget().grid(row=5, column=2, columnspan=2, pady=self.pad_y, padx=self.pad_x)
 
     def show_main_menu(self):
-        self.pack_forget()
-        self.F_main_menu.pack()
+        self.grid_forget()
+        self.F_main_menu.grid(row=0, column=0)

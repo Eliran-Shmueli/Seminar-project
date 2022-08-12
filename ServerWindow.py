@@ -59,9 +59,9 @@ class ServerWindow(WindowTemplate):
             self.delete_player_by_id(message.id)
         if message.is_message_game_info_request() and message.is_message_have_data():
             game_info = message.data
-            self.F_main_menu.pack_forget()
+            self.F_main_menu.grid_forget()
             self.F_player_info.edit(game_info)
-            self.F_player_info.pack()
+            self.F_player_info.grid(row=0,column=0)
 
     def accept_request_to_connect_from_client(self, key, message):
         new_player_id = self.add_new_player(message.data)
