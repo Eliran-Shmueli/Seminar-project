@@ -13,8 +13,10 @@ from ToolTip import CreateToolTip
 
 
 class WindowTemplate:
-    pad_x = 20
-    pad_y = 20
+    window_width = 800
+    window_height = 800
+    pad_x = 15
+    pad_y = 15
     title_font = 'Helvetica 20 underline bold'
     font = 'Helvetica 12'
     music_volume = 0.4
@@ -80,7 +82,14 @@ class WindowTemplate:
 edit window template
         :param window_name: the title of the window
         """
-        self.root.geometry('800x800')
+        # get the screen dimension
+        screen_width = self.root.winfo_screenwidth()
+        screen_height = self.root.winfo_screenheight()
+        # find the center point
+        center_x = int(screen_width / 2 - self.window_width / 2)
+        center_y = int(screen_height / 2 - self.window_height / 2)
+        # set the position of the window to the center of the screen
+        self.root.geometry(f'{self.window_width}x{self.window_height}+{center_x}+{center_y}')
         self.root.resizable(True, True)
         self.root.title(window_name)
         self.root.columnconfigure(0, weight=1)

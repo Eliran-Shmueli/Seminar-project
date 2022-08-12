@@ -2,6 +2,7 @@ from Game_info import Game_info
 
 from Client import Client
 from GifLabel import GifLabel
+from ToolTip import CreateToolTip
 from WindowTemplate import WindowTemplate
 from tkinter import *
 from PIL import ImageTk, Image
@@ -47,8 +48,6 @@ class GameWindow(WindowTemplate):
         self.B_replay = None
         self.B_next = None
 
-
-
         self.call_after_func()
         self.message = Message(self.game_info.get_player_id())
         self.init_server()
@@ -89,8 +88,6 @@ class GameWindow(WindowTemplate):
                                                                  self.Q_messages_received, self.event))
         T_server_client.start()
 
-
-
     def check_queue_received(self):
         if self.Q_messages_received.empty() is False:
             message = self.Q_messages_received.get()
@@ -123,7 +120,7 @@ class GameWindow(WindowTemplate):
             self.start_game()
         if message_received.is_message_choose():
             self.pc_choice = message_received.data
-            self.L_pc_pick.configure(text="pc chose")
+            self.L_pc_pick.configure(text="pc already selected")
             self.check_if_everybody_choose()
         if message_received.is_message_goodbye():
             self.message.set_message_goodbye()
@@ -162,11 +159,11 @@ class GameWindow(WindowTemplate):
         # create widgets
         F_main_menu = Frame(self.root)
         # adding images
-        img_start = PhotoImage(file='images/buttons/start-button.png')
-        img_main_menu = PhotoImage(file=r"images/event-featured-the-legend-of-rock-paper-scissors-1634241914.png")
-        img_main_menu = img_main_menu.subsample(2, 2)
-        L_img = Label(F_main_menu, image=img_main_menu)
-        L_img.image = img_main_menu
+        img_main_menu = Image.open("images/event-featured-the-legend-of-rock-paper-scissors-1634241914.png")
+        img_main_menu = img_main_menu.resize((int(self.window_height/1.15), int(self.window_width/1.15)), Image.ANTIALIAS)
+        my_img = ImageTk.PhotoImage(img_main_menu)
+        L_img = Label(F_main_menu, image=my_img)
+        L_img.image = my_img
 
         # add to root
         L_img.pack(pady=self.pad_y, padx=self.pad_x)
@@ -227,23 +224,49 @@ class GameWindow(WindowTemplate):
         F_choices = self.create_choices_frame(self.F_game)
         F_scores = self.create_scores_frame(self.F_game)
         self.F_round_result = self.create_round_result_frame()
-        # load image
-        img_play = PhotoImage(file='images/buttons/swords.png')
 
         # create widgets
         self.L_title = Label(self.F_game, text="Round: " + str(self.round_count), font=self.title_font)
-        self.L_player_pick = Label(self.F_game, text="Choose your destiny", font=self.font)
-        self.L_pc_pick = Label(self.F_game, text="Waiting for pc to choose", font=self.font)
 
-        self.L_title.grid(row=0,column=0)
-        F_scores.grid(row=1,column=0,pady=self.pad_y)
-        F_choices.grid(row=2,column=0)
-        self.L_player_pick.grid(row=3,column=0,pady=self.pad_y)
-        self.L_pc_pick.grid(row=4,column=0)
-        self.F_round_result.grid(row=5,column=0)
+        self.L_title.grid(row=0, column=0)
+        F_scores.grid(row=1, column=0, pady=self.pad_y)
+        F_choices.grid(row=2, column=0)
+        self.F_round_result.grid(row=5, column=0)
+
+        self.add_widgets(self.F_game, F_choices, F_scores, self.L_title)
 
 
-        self.add_widgets(self.F_game, F_choices, F_scores, self.L_title, self.L_player_pick, self.L_pc_pick)
+    def create_round_result_frame(self):
+        """
+        creates a frame that show the result of a round
+        :return: frame
+        """
+
+        F_round_result = Frame(self.F_game)
+        self.L_round_result_title = Label(F_round_result, font=self.title_font)
+        L_round_result_player = Label(F_round_result, text=self.game_info.get_player_name() + ':', font=self.font_score)
+        L_round_result_pc = Label(F_round_result, text='Pc:', font=self.font_score)
+        self.L_round_result_player_choice_img = GifLabel(F_round_result)
+        self.L_round_result_pc_choice_img = GifLabel(F_round_result)
+        self.L_player_pick = Label(F_round_result, text="Waiting for you to select", font=self.font)
+        self.L_pc_pick = Label(F_round_result, text="Waiting for pc to select", font=self.font)
+
+        img_forward = PhotoImage(file='images/buttons/next-button.png')
+        self.B_next = Button(F_round_result, image=img_forward, bd=0, state="disabled",command=self.next_stage)
+        self.B_next.image = img_forward
+
+        self.L_round_result_title.grid(row=0, column=0, columnspan=3)
+        L_round_result_player.grid(row=1, column=0, pady=self.pad_y, padx=self.pad_x)
+        L_round_result_pc.grid(row=1, column=2, pady=self.pad_y, padx=self.pad_x)
+        self.L_round_result_player_choice_img.grid(row=2, column=0, padx=self.pad_x)
+        self.L_round_result_pc_choice_img.grid(row=2, column=2, padx=self.pad_x)
+        self.L_player_pick.grid(row=3, column=0, padx=self.pad_x)
+        self.L_pc_pick.grid(row=3, column=2, padx=self.pad_x)
+        self.B_next.grid(row=4, column=1, pady=self.pad_y, )
+
+        self.add_widgets(F_round_result, self.L_round_result_title, L_round_result_player, L_round_result_pc,
+                         self.L_round_result_player_choice_img, self.L_round_result_pc_choice_img, self.L_player_pick, self.L_pc_pick, self.B_next)
+        return F_round_result
 
     def create_final_result_frame(self):
         """
@@ -263,42 +286,10 @@ class GameWindow(WindowTemplate):
         self.L_final_result_player_score.grid(row=0, column=0)
         self.L_final_result_pc_score.grid(row=0, column=1)
         self.L_final_result_img.grid(row=1, columnspan=2, pady=self.pad_y, padx=self.pad_x)
-
         self.B_replay.grid(row=2, columnspan=2, pady=self.pad_y)
-
         self.add_widgets(F_final_result, self.L_final_result_img, self.L_final_result_player_score,
                          self.L_final_result_pc_score, self.B_replay)
         return F_final_result
-
-    def create_round_result_frame(self):
-        """
-        creates a frame that show the result of a round
-        :return: frame
-        """
-
-        F_round_result = Frame(self.F_game)
-        self.L_round_result_title = Label(F_round_result, font=self.title_font)
-        L_round_result_player = Label(F_round_result, text=self.game_info.get_player_name() + ':', font=self.font_score)
-        L_round_result_pc = Label(F_round_result, text='Pc:', font=self.font_score)
-        self.L_round_result_player_choice_img = GifLabel(F_round_result)
-        self.L_round_result_pc_choice_img = GifLabel(F_round_result)
-        self.L_round_result_pc_choice_img.load('images/gif/right_hand.gif')
-        self.L_round_result_player_choice_img.load('images/gif/left_hand.gif')
-
-        img_forward = PhotoImage(file='images/buttons/next-button.png')
-        self.B_next = Button(F_round_result, image=img_forward, bd=0, command=self.next_stage)
-        self.B_next.image = img_forward
-
-        self.L_round_result_title.grid(row=0, column=0, columnspan=3)
-        L_round_result_player.grid(row=1, column=0, pady=self.pad_y, padx=self.pad_x)
-        L_round_result_pc.grid(row=1, column=2, pady=self.pad_y, padx=self.pad_x)
-        self.L_round_result_player_choice_img.grid(row=2, column=0, padx=self.pad_x)
-        self.L_round_result_pc_choice_img.grid(row=2, column=2, padx=self.pad_x)
-        self.B_next.grid(row=3, column=1, pady=self.pad_y, )
-
-        self.add_widgets(F_round_result, self.L_round_result_title, L_round_result_player, L_round_result_pc,
-                         self.L_round_result_player_choice_img, self.L_round_result_pc_choice_img, self.B_next)
-        return F_round_result
 
     def start_game(self):
         """
@@ -321,7 +312,7 @@ class GameWindow(WindowTemplate):
         self.round_count = self.round_count + 1
         result = self.get_round_result()
         self.update_title_and_scores(result)
-
+        self.B_next.configure(state="normal")
         logging.info(
             'Player chose - ' + self.player_choice)
         logging.info(
@@ -345,11 +336,14 @@ class GameWindow(WindowTemplate):
             self.send_info(self.message)
             self.update_scores_and_round_labels()
         self.L_pc_pick.configure(text="Waiting for pc to choose")
-        self.L_player_pick.configure(text="Choose your destiny")
+        self.L_player_pick.configure(text="Waiting for you to select")
 
     def reset_choices(self):
         self.pc_choice = ""
         self.player_choice = ""
+        self.reset_images_choices()
+        self.B_next.configure(state="disabled")
+        self.L_round_result_title.configure(text="")
 
     def reset_game(self):
         """
@@ -357,13 +351,12 @@ class GameWindow(WindowTemplate):
         """
         logging.info('Game over, player got back to the main menu')
         self.load_background_music(1, 'sounds/play_again.wav', self.num_music_loops)
-        self.F_final_result.grid_forget()
         self.round_count = 1
         self.player_score = 0
         self.pc_score = 0
         self.update_scores_and_round_labels()
-        self.reset_choices()
         self.activate_choices_buttons()
+        self.F_final_result.grid_forget()
         self.start_game()
 
     def update_scores_and_round_labels(self):
@@ -383,7 +376,7 @@ class GameWindow(WindowTemplate):
         self.disable_choices_buttons()
         self.player_choice = pick
         self.check_if_everybody_choose()
-        self.L_player_pick.configure(text="You chose: " + pick)
+        self.L_player_pick.configure(text="You selected: " + pick)
 
     def disable_choices_buttons(self):
         self.B_rock.configure(state="disabled")
@@ -420,6 +413,7 @@ class GameWindow(WindowTemplate):
         updates the title and scores at the round result frame
         """
         self.update_images_choices()
+        self.L_pc_pick.configure(text="Pc selected "+ self.pc_choice )
         if result == "tie":
             self.load_background_music(1, 'sounds/tie.wav', self.num_music_loops)
             self.L_round_result_title.configure(text="It's a tie")
@@ -506,7 +500,7 @@ class GameWindow(WindowTemplate):
         :param name: key for the dict
         """
         image = Image.open(path)
-        image = image.resize((size, size), resample= Image.LANCZOS)
+        image = image.resize((size, size), resample=Image.LANCZOS)
         Photo = ImageTk.PhotoImage(image)
         self.images[name] = Photo
 
@@ -547,17 +541,26 @@ class GameWindow(WindowTemplate):
         self.B_rock.configure(image=self.images.get(name + "rock"))
         self.B_paper.configure(image=self.images.get(name + "paper"))
         self.B_scissors.configure(image=self.images.get(name + "scissors"))
-        if self.player_choice is not None:
+        if len(self.player_choice) != 0 and len(self.pc_choice) != 0:
             self.update_images_choices()
 
     def update_images_choices(self):
         """
-        updates the images at the result round according to the player and pc choices
+        updates the images at the result round frame according to the player and pc choices
         """
         self.L_round_result_pc_choice_img.unload()
         self.L_round_result_player_choice_img.unload()
         self.L_round_result_pc_choice_img.configure(image=self.images.get(self.image_type + self.pc_choice))
         self.L_round_result_player_choice_img.configure(image=self.images.get(self.image_type + self.player_choice))
+
+    def reset_images_choices(self):
+        """
+        resets the images at the result round frame
+        """
+        self.L_round_result_pc_choice_img.unload()
+        self.L_round_result_player_choice_img.unload()
+        self.L_round_result_pc_choice_img.load('images/gif/right_hand.gif')
+        self.L_round_result_player_choice_img.load('images/gif/left_hand.gif')
 
     def exit_app(self):
         self.message.set_message_exit()
