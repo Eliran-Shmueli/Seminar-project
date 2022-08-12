@@ -13,10 +13,10 @@ from ToolTip import CreateToolTip
 
 
 class WindowTemplate:
-    window_width = 800
-    window_height = 800
+    window_width = 700
+    window_height = 700
     pad_x = 15
-    pad_y = 15
+    pad_y = 10
     title_font = 'Helvetica 20 underline bold'
     font = 'Helvetica 12'
     music_volume = 0.4
