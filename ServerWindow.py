@@ -21,6 +21,7 @@ class ServerWindow(WindowTemplate):
 
     def __init__(self, window_name):
         super().__init__(window_name)
+        self.root.geometry('+0+0')
         self.L_error_msg = None
         self.dic_players = {}
         self.player_id_count = 0
@@ -146,6 +147,7 @@ class ServerWindow(WindowTemplate):
 
     def edit_server_frame(self):
         # creating widgets
+
         F_addPlayer = self.create_add_player_frame(self.F_main_menu)
         L_title = Label(self.F_main_menu, text="R.P.S - Server", font=self.title_font)
         self.L_error_msg = Label(self.F_main_menu, text="", font=self.font)

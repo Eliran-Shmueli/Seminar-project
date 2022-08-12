@@ -89,7 +89,8 @@ edit window template
         center_x = int(screen_width / 2 - self.window_width / 2)
         center_y = int(screen_height / 2 - self.window_height / 2)
         # set the position of the window to the center of the screen
-        self.root.geometry(f'{self.window_width}x{self.window_height}+{center_x}+{center_y}')
+        # self.root.geometry(f'{self.window_width}x{self.window_height}+{center_x}+{center_y}')
+        self.root.geometry('+0+0')
         self.root.resizable(True, True)
         self.root.title(window_name)
         self.root.columnconfigure(0, weight=1)
