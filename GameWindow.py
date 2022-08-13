@@ -159,11 +159,9 @@ class GameWindow(WindowTemplate):
         # create widgets
         F_main_menu = Frame(self.root)
         # adding images
-        img_main_menu = Image.open("images/event-featured-the-legend-of-rock-paper-scissors-1634241914.png")
-        img_main_menu = img_main_menu.resize((int(self.window_height/1.15), int(self.window_width/1.15)), Image.ANTIALIAS)
-        my_img = ImageTk.PhotoImage(img_main_menu)
-        L_img = Label(F_main_menu, image=my_img)
-        L_img.image = my_img
+
+        L_img = GifLabel(F_main_menu)
+        L_img.load("images/gif/connecting.gif")
 
         # add to root
         L_img.pack(pady=self.pad_y, padx=self.pad_x)
@@ -413,7 +411,7 @@ class GameWindow(WindowTemplate):
         updates the title and scores at the round result frame
         """
         self.update_images_choices()
-        self.L_pc_pick.configure(text="Pc selected "+ self.pc_choice )
+        self.L_pc_pick.configure(text="Pc selected: "+ self.pc_choice )
         if result == "tie":
             self.load_background_music(1, 'sounds/tie.wav', self.num_music_loops)
             self.L_round_result_title.configure(text="It's a tie")
