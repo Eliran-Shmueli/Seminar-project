@@ -23,7 +23,6 @@ class FrameInfo(Frame):
         self.F_main_menu = previous_frame
         self.L_player_results = None
         self.L_player_picks = None
-        self.L_num_rounds = None
         self.L_num_games = None
         self.L_player_name = None
         self.L_player_id = None
@@ -38,7 +37,6 @@ class FrameInfo(Frame):
         self.L_player_id = Label(self, text="Player's id: ", font=self.font)
         self.L_player_name = Label(self, text="Player's name", font=self.font)
         self.L_num_games = Label(self, text="Number of games: ", font=self.font)
-        self.L_num_rounds = Label(self, text="Number of rounds:", font=self.font)
         img_back = PhotoImage(file='images/buttons/back-button.png')
         self.B_to_main_menu = Button(self, image=img_back, command=self.show_main_menu, bd=0)
         self.B_to_main_menu.image = img_back
@@ -47,22 +45,20 @@ class FrameInfo(Frame):
         self.L_player_id.grid(row=1, column=0, columnspan=2, pady=self.pad_y_label, padx=self.pad_x, sticky='w')
         self.L_player_name.grid(row=2, column=0, columnspan=2, pady=self.pad_y_label, padx=self.pad_x, sticky='w')
         self.L_num_games.grid(row=3, column=0, columnspan=2, pady=self.pad_y_label, padx=self.pad_x, sticky='w')
-        self.L_num_rounds.grid(row=4, column=0, columnspan=2, pady=self.pad_y_label, padx=self.pad_x, sticky='w')
-        self.B_to_main_menu.grid(row=6, column=0, columnspan=4, pady=self.pad_y)
+        self.B_to_main_menu.grid(row=5, column=0, columnspan=4, pady=self.pad_y)
         # add to dict
-        self.list_widgets = [self.L_title, self.L_player_id, self.L_player_name, self.L_num_games, self.L_num_rounds,
+        self.list_widgets = [self.L_title, self.L_player_id, self.L_player_name, self.L_num_games,
                              self.B_to_main_menu, self]
 
-    def edit(self, game_info):
+    def edit(self, player_info):
         """
         changes labels according to the game info
-        :param game_info: game information
+        :param player_info: game information
         """
-        self.L_player_id.configure(text="Player's id: " + str(game_info.get_player_id()))
-        self.L_player_name.configure(text="Player's name: " + game_info.get_player_name())
-        self.L_num_games.configure(text="Number of games: " + str(game_info.num_games))
-        self.L_num_rounds.configure(text="Number of rounds: " + str(game_info.num_rounds))
-        self.plot(game_info)
+        self.L_player_id.configure(text="Player's id: " + str(player_info.get_id()))
+        self.L_player_name.configure(text="Player's name: " + player_info.get_name())
+        self.L_num_games.configure(text="Number of games: " + str(player_info.num_games))
+        self.plot(player_info)
 
     def plot(self, game_info):
         """
@@ -109,8 +105,8 @@ class FrameInfo(Frame):
         axes_results.set_title("The player's round results history")
         axes_results.set_ylabel('Counter')
 
-        canvas_selection.get_tk_widget().grid(row=5, column=0, columnspan=2, pady=self.pad_y, padx=self.pad_x)
-        canvas_results.get_tk_widget().grid(row=5, column=2, columnspan=2, pady=self.pad_y, padx=self.pad_x)
+        canvas_selection.get_tk_widget().grid(row=4, column=0, columnspan=2, pady=self.pad_y, padx=self.pad_x)
+        canvas_results.get_tk_widget().grid(row=4, column=2, columnspan=2, pady=self.pad_y, padx=self.pad_x)
 
     def show_main_menu(self):
         """

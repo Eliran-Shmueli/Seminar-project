@@ -1,6 +1,7 @@
-from Game_info import Game_info
-from Client import Client
+from GameInfo import GameInfo
+from Client_server import Client
 from GifLabel import GifLabel
+from PlayerInfo import PlayerInfo
 from WindowTemplate import WindowTemplate
 from tkinter import *
 from PIL import ImageTk, Image
@@ -19,8 +20,9 @@ class GameWindow(WindowTemplate):
         :param player_id: player's id
         :param player_name: player's name
         """
-        super().__init__('Client-- Id - ' + str(player_id) + ', Name - ' + player_name,False)
-        self.game_info = Game_info(player_id, player_name)
+        super().__init__('Client-- Id - ' + str(player_id) + ', Name - ' + player_name, False)
+        self.game_info = GameInfo(player_id, player_name)
+        self.player_info = PlayerInfo(player_id, player_name)
         self.image_type = "animated_"
         self.round_count = 1
         self.player_score = 0
@@ -60,7 +62,7 @@ class GameWindow(WindowTemplate):
         self.init_frames()
         self.message.set_message_join_request()
         self.init_client_server()
-        self.send_info(self.message)
+        self.send_to_server(self.message)
         self.run()
 
     def run(self):
@@ -99,7 +101,7 @@ class GameWindow(WindowTemplate):
             self.actions(message)
         self.call_after_func()
 
-    def send_info(self, message, data=None):
+    def send_to_server(self, message, data=None):
         """
         send message to the server
         :param message: a message to send
@@ -107,6 +109,15 @@ class GameWindow(WindowTemplate):
         """
         message.add_data_to_message(data)
         self.Q_messages_send.put(message)
+
+    def send_info(self):
+        """
+        sends updated info to server
+        data - (playerInfo, gameInfo)
+        """
+        data = (self.player_info, self.game_info)
+        self.message.set_message_game_info_request()
+        self.send_to_server(self.message, data)
 
     def mute_background_music(self, channel=1):
         """
@@ -129,21 +140,20 @@ class GameWindow(WindowTemplate):
         """
         if message_received.is_message_exit():
             self.message.set_message_goodbye()
-            self.send_info(self.message)
+            self.send_to_server(self.message)
             self.run_call = False
             self.event.set()
             super().exit_app()
         if message_received.is_message_game_info_request():
-            game_info = self.game_info.create_copy()
+            game_info = self.player_info.create_copy()
             self.message.set_message_game_info_request()
-            self.send_info(self.message, game_info)
+            self.send_to_server(self.message, game_info)
         if message_received.is_message_accepted():
             self.start_game()
         if message_received.is_message_choose():
             self.pc_choice = message_received.data
             self.L_pc_pick.configure(text="Pc already selected")
             self.check_if_everybody_choose()
-
 
     def show_frame_in_grid(self, frame):
         """
@@ -230,7 +240,6 @@ class GameWindow(WindowTemplate):
         # add to dict
         self.add_widgets(self.F_game, F_choices, F_scores, self.L_title)
 
-
     def create_round_result_frame(self):
         """
         creates a frame that show the result of a round
@@ -246,7 +255,7 @@ class GameWindow(WindowTemplate):
         self.L_pc_pick = Label(F_round_result, text="Waiting for Pc to select", font=self.font)
         # load image
         img_forward = PhotoImage(file='images/buttons/next-button.png')
-        self.B_next = Button(F_round_result, image=img_forward, bd=0, state="disabled",command=self.next_stage)
+        self.B_next = Button(F_round_result, image=img_forward, bd=0, state="disabled", command=self.next_stage)
         self.B_next.image = img_forward
         # add to grid
         self.L_round_result_title.grid(row=0, column=0, columnspan=3)
@@ -259,7 +268,8 @@ class GameWindow(WindowTemplate):
         self.B_next.grid(row=4, column=1, pady=self.pad_y, )
         # add to dict
         self.add_widgets(F_round_result, self.L_round_result_title, L_round_result_player, L_round_result_pc,
-                         self.L_round_result_player_choice_img, self.L_round_result_pc_choice_img, self.L_player_pick, self.L_pc_pick, self.B_next)
+                         self.L_round_result_player_choice_img, self.L_round_result_pc_choice_img, self.L_player_pick,
+                         self.L_pc_pick, self.B_next)
         return F_round_result
 
     def create_final_result_frame(self):
@@ -291,11 +301,11 @@ class GameWindow(WindowTemplate):
         """
         self.reset_choices()
         self.message.set_message_choose()
-        self.send_info(self.message)
+        self.send_to_server(self.message)
         self.click_sound_valid()
         self.load_background_music(1, 'sounds/start.wav', self.num_music_loops)
         logging.info('Player started a new game')
-        self.game_info.increase_num_games()
+        self.player_info.increase_num_games()
         self.F_main_menu.grid_forget()
         self.show_frame_in_grid(self.F_game)
 
@@ -323,13 +333,14 @@ class GameWindow(WindowTemplate):
         self.click_sound_valid()
         if (self.round_count > 3) or (self.player_score == 2) or (self.pc_score == 2):
             self.update_final_round_frame()
+            self.send_info()
             self.F_game.grid_forget()
             self.show_frame_in_grid(self.F_final_result)
         else:
             self.reset_choices()
             self.activate_choices_buttons()
             self.message.set_message_choose()
-            self.send_info(self.message)
+            self.send_to_server(self.message)
             self.update_scores_and_round_labels()
         self.L_pc_pick.configure(text="Waiting for Pc to choose")
         self.L_player_pick.configure(text="Waiting for you to select")
@@ -348,8 +359,10 @@ class GameWindow(WindowTemplate):
         """
         reset all variables and show the main menu
         """
-        logging.info('Game over, player got back to the main menu')
         self.load_background_music(1, 'sounds/play_again.wav', self.num_music_loops)
+        logging.info("Game over")
+        self.player_info.clear_results()
+        self.game_info.start_new_game()
         self.round_count = 1
         self.player_score = 0
         self.pc_score = 0
@@ -395,44 +408,47 @@ class GameWindow(WindowTemplate):
 
     def update_final_round_frame(self):
         """
-        updates the titles and image at the final result frame, according to the scores
+        updates the titles, image at the final result frame and game info winner, according to the scores
         """
         self.L_final_result_player_score.configure(
             text=self.game_info.get_player_name() + ": " + str(self.player_score))
         self.L_final_result_pc_score.configure(text="Pc: " + str(self.pc_score))
         if self.player_score == self.pc_score:
-            logging.info('The game ended in a tie')
             self.load_background_music(1, 'sounds/tie.wav', self.num_music_loops)
             self.L_final_result_img.configure(image=self.images.get("tie"))
+            self.game_info.winner = "Tie"
+            logging.info('The game ended in a tie')
         elif self.player_score > self.pc_score:
-            logging.info('The player won the game')
             self.load_background_music(1, 'sounds/mixkit-video-game-win-2016.wav', self.num_music_loops)
             self.L_final_result_img.configure(image=self.images.get("win"))
+            self.game_info.winner = self.player_info.get_name()
+            logging.info('The player won the game')
         else:
-            logging.info('The player lost the game')
             self.load_background_music(1, 'sounds/mixkit-horror-lose-2028.wav', self.num_music_loops)
             self.L_final_result_img.configure(image=self.images.get("lose"))
+            self.game_info.winner = "Pc"
+            logging.info('The player lost the game')
 
     def update_title_and_scores(self, result):
         """
         updates the title and scores at the round result frame
         """
         self.update_images_choices()
-        self.L_pc_pick.configure(text="Pc selected: "+ self.pc_choice )
+        self.L_pc_pick.configure(text="Pc selected: " + self.pc_choice)
         if result == "tie":
             self.load_background_music(1, 'sounds/tie.wav', self.num_music_loops)
             self.L_round_result_title.configure(text="It's a tie")
-            self.game_info.increase_num_ties()
+            self.player_info.increase_num_ties()
         elif result == "win":
             self.load_background_music(1, 'sounds/mixkit-video-game-win-2016.wav', self.num_music_loops)
             self.L_round_result_title.configure(text="You won")
             self.player_score = self.player_score + 1
-            self.game_info.increase_num_wins()
+            self.player_info.increase_num_wins()
         elif result == "lose":
             self.load_background_music(1, 'sounds/mixkit-horror-lose-2028.wav', self.num_music_loops)
             self.L_round_result_title.configure(text="You lost")
             self.pc_score = self.pc_score + 1
-            self.game_info.increase_num_losses()
+            self.player_info.increase_num_losses()
 
     def get_round_result(self):
         """
@@ -455,11 +471,11 @@ class GameWindow(WindowTemplate):
 
     def increase_selection_counter(self):
         if self.player_choice == "rock":
-            self.game_info.increase_num_rock()
+            self.player_info.increase_num_rock()
         elif self.player_choice == "paper":
-            self.game_info.increase_num_paper()
+            self.player_info.increase_num_paper()
         else:
-            self.game_info.increase_num_scissors()
+            self.player_info.increase_num_scissors()
 
     def result(self, weak_pick):
         """
@@ -572,5 +588,4 @@ class GameWindow(WindowTemplate):
         send message to server to close the app
         """
         self.message.set_message_exit()
-        self.send_info(self.message)  # exit
-
+        self.send_to_server(self.message)  # exit

@@ -1,14 +1,16 @@
+from PlayerInfo import PlayerInfo
+
 
 class Player:
     def __init__(self, player_id, player_name):
         """
-        inti Player
+        init Player
         :param player_id: player id
         :param player_name: player name
         """
+        self.socket = None
         self.id = player_id
         self.name = player_name
-        self.socket = None
 
     def get_name(self):
         """
