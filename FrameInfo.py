@@ -3,7 +3,6 @@ from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
 
 
-
 class FrameInfo(Frame):
     pad_y = 10
     pad_y_label = 2
@@ -12,6 +11,11 @@ class FrameInfo(Frame):
     font = 'Helvetica 12'
 
     def __init__(self, root, previous_frame):
+        """
+        init FrameInfo
+        :param root: window main root
+        :param previous_frame: frame to go back to on a button click
+        """
         super().__init__(master=root)
         self.root = root
         self.B_to_main_menu = None
@@ -27,6 +31,9 @@ class FrameInfo(Frame):
         self.create_player_info_frame()
 
     def create_player_info_frame(self):
+        """
+        creates and edits player info frame
+        """
         self.L_title = Label(self, text="Player's info", font=self.title_font)
         self.L_player_id = Label(self, text="Player's id: ", font=self.font)
         self.L_player_name = Label(self, text="Player's name", font=self.font)
@@ -35,18 +42,22 @@ class FrameInfo(Frame):
         img_back = PhotoImage(file='images/buttons/back-button.png')
         self.B_to_main_menu = Button(self, image=img_back, command=self.show_main_menu, bd=0)
         self.B_to_main_menu.image = img_back
-
+        # place on grid
         self.L_title.grid(row=0, column=0, columnspan=4, pady=self.pad_y * 2)
         self.L_player_id.grid(row=1, column=0, columnspan=2, pady=self.pad_y_label, padx=self.pad_x, sticky='w')
         self.L_player_name.grid(row=2, column=0, columnspan=2, pady=self.pad_y_label, padx=self.pad_x, sticky='w')
         self.L_num_games.grid(row=3, column=0, columnspan=2, pady=self.pad_y_label, padx=self.pad_x, sticky='w')
         self.L_num_rounds.grid(row=4, column=0, columnspan=2, pady=self.pad_y_label, padx=self.pad_x, sticky='w')
         self.B_to_main_menu.grid(row=6, column=0, columnspan=4, pady=self.pad_y)
-
+        # add to dict
         self.list_widgets = [self.L_title, self.L_player_id, self.L_player_name, self.L_num_games, self.L_num_rounds,
                              self.B_to_main_menu, self]
 
     def edit(self, game_info):
+        """
+        changes labels according to the game info
+        :param game_info: game information
+        """
         self.L_player_id.configure(text="Player's id: " + str(game_info.get_player_id()))
         self.L_player_name.configure(text="Player's name: " + game_info.get_player_name())
         self.L_num_games.configure(text="Number of games: " + str(game_info.num_games))
@@ -54,6 +65,10 @@ class FrameInfo(Frame):
         self.plot(game_info)
 
     def plot(self, game_info):
+        """
+        creates statistics
+        :param game_info: game information
+        """
         # prepare data
         data_selected = {
             'Rock': game_info.num_rock,
@@ -98,5 +113,8 @@ class FrameInfo(Frame):
         canvas_results.get_tk_widget().grid(row=5, column=2, columnspan=2, pady=self.pad_y, padx=self.pad_x)
 
     def show_main_menu(self):
+        """
+        hide frame info and shows main menu
+        """
         self.grid_forget()
         self.F_main_menu.grid(row=0, column=0)

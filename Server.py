@@ -8,7 +8,10 @@ from Message import Message
 
 
 def computer_pick():
-    """generate random option for the computer"""
+    """
+    generate random option for the computer
+    :return: "rock"|"paper"|"scissors"
+    """
     choice = random.choice(["rock", "paper", "scissors"])
     logging.info('Pc chose - ' + choice)
     return choice
@@ -18,6 +21,13 @@ class Server:
     HEADERSIZE = 10
 
     def __init__(self, Q_messages_send, Q_messages_received, dic_players, event):
+        """
+        init server
+        :param Q_messages_send: queue of messages to send
+        :param Q_messages_received: queue of messages sever received
+        :param dic_players: dictionary of players
+        :param event: an Event to stop the server
+        """
         self.Q_messages_received = Q_messages_received
         self.Q_messages_send = Q_messages_send
         self.sel = selectors.DefaultSelector()
@@ -29,6 +39,10 @@ class Server:
         self.event_stop = event
 
     def run(self):
+        """
+        server init socket and listing on it for incoming and outgoing data.
+        if there are messages on Q_messages_send, sends all.
+        """
         lsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         lsock.bind((self.host, self.port))
         lsock.listen()
@@ -49,10 +63,14 @@ class Server:
                         self.service_connection(key, mask)
         except KeyboardInterrupt:
             print("sever - Caught keyboard interrupt, exiting")
-        # finally:
-        # self.sel.close()
+        finally:
+            self.sel.close()
 
     def accept_wrapper(self, sock):
+        """
+        creates new socket for new client and adds to selector
+        :param sock: socket of the server
+        """
         socket_connected, addr = sock.accept()  # Should be ready to read
         print(f"server - Accepted connection from {addr}")
         socket_connected.setblocking(False)
@@ -61,6 +79,11 @@ class Server:
         self.sel.register(socket_connected, events, data=data)
 
     def service_connection(self, key, mask):
+        """
+        send message or receive accordingly to the mask
+        :param key: socket
+        :param mask: send or receive message
+        """
         sock = key.fileobj
         data = key.data
         if mask & selectors.EVENT_READ:
@@ -79,13 +102,18 @@ class Server:
                 data.byte_out = b''
 
     def actions(self, message_received, key):
+        """
+        actions to do according to the received message
+        :param message_received: received message
+        :param key: socket
+        """
         if message_received.is_message_goodbye():
             print("client id " + str(message_received.id) + " has exit")
             print(f"sever - Closing connection to {key.data.addr}")
             del self.dic_players[message_received.id]
             self.sel.unregister(key.fileobj)
             key.fileobj.close()
-        elif message_received.is_message_game_info_request():
+        elif message_received.is_message_game_info_request() or message_received.is_message_exit():
             self.Q_messages_received.put((key, message_received))
         else:
             if message_received.is_message_join_request():
@@ -95,11 +123,13 @@ class Server:
             if message_received.is_message_choose():
                 self.message.set_message_choose()
                 self.message.add_data_to_message(computer_pick())
-            if message_received.is_message_exit():
-                self.message.set_message_goodbye()
-                self.Q_messages_received.put((key, message_received))
             self.append_message(key.data, self.message)
 
     def append_message(self, data, message):
+        """
+        convert message to bytes and adds it to data.byte_out
+        :param data: data of a socket
+        :param message: message to send
+        """
         data.byte_out = pickle.dumps(message)
         data.byte_out = bytes(f"{len(data.byte_out):<{self.HEADERSIZE}}", 'utf-8') + data.byte_out

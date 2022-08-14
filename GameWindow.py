@@ -1,8 +1,6 @@
 from Game_info import Game_info
-
 from Client import Client
 from GifLabel import GifLabel
-from ToolTip import CreateToolTip
 from WindowTemplate import WindowTemplate
 from tkinter import *
 from PIL import ImageTk, Image
@@ -16,6 +14,11 @@ class GameWindow(WindowTemplate):
     num_music_loops = 0
 
     def __init__(self, player_id, player_name):
+        """
+        init game window
+        :param player_id: player's id
+        :param player_name: player's name
+        """
         super().__init__('Client-- Id - ' + str(player_id) + ', Name - ' + player_name,False)
         self.game_info = Game_info(player_id, player_name)
         self.image_type = "animated_"
@@ -44,26 +47,26 @@ class GameWindow(WindowTemplate):
         self.B_rock = None
         self.B_paper = None
         self.B_scissors = None
-        self.B_bottom = None
         self.B_replay = None
         self.B_next = None
-
         self.call_after_func()
         self.message = Message(self.game_info.get_player_id())
         self.init_server()
 
     def init_server(self):
+        """
+        init game's frames and client server
+        """
         self.init_frames()
         self.message.set_message_join_request()
         self.init_client_server()
         self.send_info(self.message)
-        self.init_run()
+        self.run()
 
-    def init_run(self):
+    def run(self):
         """
-        adds bottom button to root and start mainloop
+        start the game window
         """
-
         self.root.mainloop()
         logging.info('Game window started')
 
@@ -83,29 +86,47 @@ class GameWindow(WindowTemplate):
         """
         init message and thread, set message to "connected"
         """
-
         T_server_client = threading.Thread(target=lambda: Client(self.game_info.get_player_id(), self.Q_messages_send,
                                                                  self.Q_messages_received, self.event))
         T_server_client.start()
 
     def check_queue_received(self):
+        """
+        checks if there are messages in the queue
+        """
         if self.Q_messages_received.empty() is False:
             message = self.Q_messages_received.get()
             self.actions(message)
         self.call_after_func()
 
     def send_info(self, message, data=None):
+        """
+        send message to the server
+        :param message: a message to send
+        :param data: a data to add to the message
+        """
         message.add_data_to_message(data)
         self.Q_messages_send.put(message)
 
     def mute_background_music(self, channel=1):
+        """
+        mute main background music
+        :param channel: channel number
+        """
         super().mute_background_music(channel)
 
     def check_if_everybody_choose(self):
+        """
+        checks if player and pc selected and play the game
+        """
         if len(self.player_choice) != 0 and len(self.pc_choice) != 0:
             self.play_game()
 
     def actions(self, message_received):
+        """
+        actions to do according to the message content
+        :param message_received: message from the server
+        """
         if message_received.is_message_exit():
             self.message.set_message_goodbye()
             self.send_info(self.message)
@@ -122,12 +143,7 @@ class GameWindow(WindowTemplate):
             self.pc_choice = message_received.data
             self.L_pc_pick.configure(text="Pc already selected")
             self.check_if_everybody_choose()
-        if message_received.is_message_goodbye():
-            self.message.set_message_goodbye()
-            self.send_info(self.message)
-            self.run_call = False
-            self.event.set()
-            super().exit_app()
+
 
     def show_frame_in_grid(self, frame):
         """
@@ -135,20 +151,6 @@ class GameWindow(WindowTemplate):
         :param frame: selected frame
         """
         frame.grid(row=0, column=0, pady=self.pad_y)
-
-    def config_bottom_button(self, text='', state='', func=None):
-        """
-        config the button at the bottom of the window
-        :param text: the text in the button
-        :param state: normal or disable
-        :param func: function that will run when the user clicked the button
-        """
-        if len(text) != 0:
-            self.B_bottom.configure(text=text)
-        if len(state) != 0:
-            self.B_bottom.configure(state=state)
-        if func is not None:
-            self.B_bottom.configure(command=func)
 
     def create_main_menu(self):
         """
@@ -159,14 +161,11 @@ class GameWindow(WindowTemplate):
         # create widgets
         F_main_menu = Frame(self.root)
         # adding images
-
         L_img = GifLabel(F_main_menu)
         L_img.load("images/gif/connecting.gif")
-
         # add to root
         L_img.pack(pady=self.pad_y, padx=self.pad_x)
         self.show_frame_in_grid(F_main_menu)
-
         # add to dict
         self.add_widgets(F_main_menu, L_img)
         return F_main_menu
@@ -179,14 +178,13 @@ class GameWindow(WindowTemplate):
         """
         # create widgets
         F_scores = Frame(F_game)
-
         self.L_player_score = Label(F_scores, text=self.game_info.get_player_name() + ": " + str(self.player_score),
                                     font=self.font_score)
         self.L_pc_score = Label(F_scores, text="Pc: " + str(self.pc_score), font=self.font_score)
         # put in order
         self.L_player_score.pack(side=LEFT, padx=self.pad_x)
         self.L_pc_score.pack(side=LEFT, padx=self.pad_x)
-
+        # add to dict
         self.add_widgets(self.L_player_score, self.L_pc_score)
         return F_scores
 
@@ -208,7 +206,7 @@ class GameWindow(WindowTemplate):
         self.B_rock.pack(side=LEFT, pady=self.pad_y, padx=self.pad_x)
         self.B_paper.pack(side=LEFT, pady=self.pad_y, padx=self.pad_x)
         self.B_scissors.pack(side=LEFT, pady=self.pad_y, padx=self.pad_x)
-
+        # add to dict
         self.add_widgets(self.B_rock, self.B_paper, self.B_scissors)
         return F_choices
 
@@ -222,15 +220,14 @@ class GameWindow(WindowTemplate):
         F_choices = self.create_choices_frame(self.F_game)
         F_scores = self.create_scores_frame(self.F_game)
         self.F_round_result = self.create_round_result_frame()
-
         # create widgets
         self.L_title = Label(self.F_game, text="Round: " + str(self.round_count), font=self.title_font)
-
+        # add to grid
         self.L_title.grid(row=0, column=0)
         F_scores.grid(row=1, column=0, pady=self.pad_y)
         F_choices.grid(row=2, column=0)
         self.F_round_result.grid(row=5, column=0)
-
+        # add to dict
         self.add_widgets(self.F_game, F_choices, F_scores, self.L_title)
 
 
@@ -239,7 +236,6 @@ class GameWindow(WindowTemplate):
         creates a frame that show the result of a round
         :return: frame
         """
-
         F_round_result = Frame(self.F_game)
         self.L_round_result_title = Label(F_round_result, font=self.title_font)
         L_round_result_player = Label(F_round_result, text=self.game_info.get_player_name() + ':', font=self.font_score)
@@ -248,11 +244,11 @@ class GameWindow(WindowTemplate):
         self.L_round_result_pc_choice_img = GifLabel(F_round_result)
         self.L_player_pick = Label(F_round_result, text="Waiting for you to select", font=self.font)
         self.L_pc_pick = Label(F_round_result, text="Waiting for Pc to select", font=self.font)
-
+        # load image
         img_forward = PhotoImage(file='images/buttons/next-button.png')
         self.B_next = Button(F_round_result, image=img_forward, bd=0, state="disabled",command=self.next_stage)
         self.B_next.image = img_forward
-
+        # add to grid
         self.L_round_result_title.grid(row=0, column=0, columnspan=3)
         L_round_result_player.grid(row=1, column=0, pady=self.pad_y, padx=self.pad_x)
         L_round_result_pc.grid(row=1, column=2, pady=self.pad_y, padx=self.pad_x)
@@ -261,7 +257,7 @@ class GameWindow(WindowTemplate):
         self.L_player_pick.grid(row=3, column=0, padx=self.pad_x)
         self.L_pc_pick.grid(row=3, column=2, padx=self.pad_x)
         self.B_next.grid(row=4, column=1, pady=self.pad_y, )
-
+        # add to dict
         self.add_widgets(F_round_result, self.L_round_result_title, L_round_result_player, L_round_result_pc,
                          self.L_round_result_player_choice_img, self.L_round_result_pc_choice_img, self.L_player_pick, self.L_pc_pick, self.B_next)
         return F_round_result
@@ -275,16 +271,16 @@ class GameWindow(WindowTemplate):
         self.L_final_result_img = Label(F_final_result)
         self.L_final_result_player_score = Label(F_final_result, font=self.title_font)
         self.L_final_result_pc_score = Label(F_final_result, font=self.title_font)
-
         # load image
         img_forward = PhotoImage(file='images/buttons/replay-button.png')
         self.B_replay = Button(F_final_result, image=img_forward, bd=0, command=self.reset_game)
         self.B_replay.image = img_forward
-
+        # add to grid
         self.L_final_result_player_score.grid(row=0, column=0)
         self.L_final_result_pc_score.grid(row=0, column=1)
         self.L_final_result_img.grid(row=1, columnspan=2, pady=self.pad_y, padx=self.pad_x)
         self.B_replay.grid(row=2, columnspan=2, pady=self.pad_y)
+        # add to dict
         self.add_widgets(F_final_result, self.L_final_result_img, self.L_final_result_player_score,
                          self.L_final_result_pc_score, self.B_replay)
         return F_final_result
@@ -293,7 +289,6 @@ class GameWindow(WindowTemplate):
         """
         starting the game
         """
-
         self.reset_choices()
         self.message.set_message_choose()
         self.send_info(self.message)
@@ -305,6 +300,9 @@ class GameWindow(WindowTemplate):
         self.show_frame_in_grid(self.F_game)
 
     def play_game(self):
+        """
+        play game and updates accordingly
+        """
         self.click_sound_valid()
         logging.info('Round ' + str(self.round_count))
         self.round_count = self.round_count + 1
@@ -337,6 +335,9 @@ class GameWindow(WindowTemplate):
         self.L_player_pick.configure(text="Waiting for you to select")
 
     def reset_choices(self):
+        """
+        reset pc and player's selections, reset images, disable button and reset result title
+        """
         self.pc_choice = ""
         self.player_choice = ""
         self.reset_images_choices()
@@ -377,11 +378,17 @@ class GameWindow(WindowTemplate):
         self.L_player_pick.configure(text="You selected: " + pick)
 
     def disable_choices_buttons(self):
+        """
+        disable rock, paper and scissors buttons
+        """
         self.B_rock.configure(state="disabled")
         self.B_paper.configure(state="disabled")
         self.B_scissors.configure(state="disabled")
 
     def activate_choices_buttons(self):
+        """
+        activate rock, paper and scissors buttons
+        """
         self.B_rock.configure(state="normal")
         self.B_paper.configure(state="normal")
         self.B_scissors.configure(state="normal")
@@ -429,8 +436,8 @@ class GameWindow(WindowTemplate):
 
     def get_round_result(self):
         """
-
-        :return: the result of a round
+        returns the result of a round
+        :return: result
         """
         self.game_info.increase_num_rounds()
         self.increase_selection_counter()
@@ -561,13 +568,9 @@ class GameWindow(WindowTemplate):
         self.L_round_result_player_choice_img.load('images/gif/left_hand.gif')
 
     def exit_app(self):
+        """
+        send message to server to close the app
+        """
         self.message.set_message_exit()
         self.send_info(self.message)  # exit
 
-
-def main_GameWindow():
-    GameWindow()
-
-
-if __name__ == "__main__":
-    main_GameWindow()

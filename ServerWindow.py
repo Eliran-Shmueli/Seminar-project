@@ -15,12 +15,25 @@ from Server import Server
 from Message import Message
 
 
+def create_player_process(player_new):
+    """
+    creating and starting new game process
+    :param player_new: player object
+    """
+    player_process = multiprocessing.Process(target=GameWindow.GameWindow,
+                                             args=(player_new.get_id(), player_new.get_name(),))
+    player_process.start()
+
+
 class ServerWindow(WindowTemplate):
     pad_y = 10
     pad_x = 10
 
-    def __init__(self, window_name):
-        super().__init__(window_name,True)
+    def __init__(self):
+        """
+        init server window
+        """
+        super().__init__("R.P.S - Server", True)
         self.root.geometry('+0+0')
         self.L_error_msg = None
         self.dic_players = {}
@@ -39,24 +52,39 @@ class ServerWindow(WindowTemplate):
         logging.info('Server window started')
 
     def add_new_player(self, name):
+        """
+        adds new player to the server
+        :param name: name of the player
+        :return: player's id
+        """
         self.player_id_count = self.player_id_count + 1
         player_new = Player(self.player_id_count, name)
         self.listbox.insert('', END, values=(self.player_id_count, name))
-        self.create_player_process(player_new)
+        create_player_process(player_new)
         self.dic_players[self.player_id_count] = player_new
         logging.info('Player ' + "Id: " + str(self.player_id_count) + ", Name: " + name + ' was added')
         return self.player_id_count
 
-    def mute_background_music(self):
-        super().mute_background_music(0)
+    def mute_background_music(self, channel=0):
+        """
+        mute background music
+        """
+        super().mute_background_music(channel)
 
     def check_queue_received(self):
+        """
+        checks queue of received messages
+        """
         if self.Q_messages_received.empty() is False:
             key, message = self.Q_messages_received.get()
             self.actions(message)
         self.call_after_func()
 
     def actions(self, message):
+        """
+        actions to do according to the received message
+        :param message: received message
+        """
         if message.is_message_exit():
             self.delete_player_by_id(message.id)
         if message.is_message_game_info_request() and message.is_message_have_data():
@@ -65,57 +93,96 @@ class ServerWindow(WindowTemplate):
             self.F_player_info.edit(game_info)
             self.F_player_info.grid(row=0, column=0)
 
-    def accept_request_to_connect_from_client(self, key, message):
-        new_player_id = self.add_new_player(message.data)
-        message_to_send = Message(new_player_id)
-        message_to_send.set_message_join_request()
-        self.dic_players[new_player_id].socket = key
-        self.send_message_to_player(new_player_id, message_to_send)
-
     def edit_listbox(self):
+        """
+        edits listbox heading
+        """
         self.listbox.heading('id', text="Player's id", anchor=W)
         self.listbox.heading('name', text="Player's name", anchor=W)
 
+    def get_player_info(self):
+        """
+        get selected player information from client
+        """
+        self.click_sound_valid()
+        selected_player = self.listbox.selection()
+        if selected_player:
+            player_info = self.listbox.item(selected_player[0]).get("values")
+            player_id = player_info[0]
+            message = Message(player_id)
+            message.set_message_game_info_request()
+            self.send_message_to_player(player_id, message)
+            player_name = player_info[1]
+
+            logging.info('Getting player id: ' + str(player_id) + ', name: ' + player_name + 'information')
+        else:
+            self.click_sound_error()
+
     def delete_selected_player_from_listbox(self):
+        """
+        delete selected player by the user from listbox and disconnect it
+        """
         self.click_sound_valid()
         selected_player = self.listbox.selection()
         if selected_player:
             player_info = self.listbox.item(selected_player[0]).get("values")
             player_id = player_info[0]
             player_name = player_info[1]
-            self.listbox.delete(selected_player[0])
-            self.disconnect_client(player_id)
+            self.delete_player_by_id(player_id)
             logging.info('Player id: ' + str(player_id) + ', name: ' + player_name + 'was disconnected')
         else:
             self.click_sound_error()
 
     def delete_all_players_from_listbox(self):
+        """
+        delete all players from listbox and disconnect all of them
+        """
         if len(self.listbox.get_children()) != 0:
             self.click_sound_valid()
-            for player_index in self.listbox.get_children():
-                self.listbox.delete(player_index)
-            for player_id in self.dic_players.keys():
-                self.disconnect_client(player_id)
+            for player_id in list(self.dic_players):
+                self.delete_player_by_id(player_id)
         else:
             self.click_sound_error()
 
     def delete_player_by_id(self, player_id):
+        """
+        delete player from the listbox and disconnect him by id
+        :param player_id: player's id
+        """
         player_list = self.listbox.get_children()
         for player_index in player_list:
             player_index_id = self.listbox.item(player_index).get("values")[0]
             if player_index_id == player_id:
-                self.listbox.delete(player_index)
+                if self.dic_players[player_id].socket is not None:
+                    self.listbox.delete(player_index)
+                    self.disconnect_client(player_id)
+                else:
+                    time.sleep(1)
+                    self.delete_player_by_id(player_id)
 
     def disconnect_client(self, player_id):
+        """
+        send message to disconnect player
+        :param player_id:
+        """
         message = Message(player_id)
         message.set_message_exit()
         self.send_message_to_player(player_id, message)
 
     def send_message_to_player(self, player_id, message):
+        """
+        send message to player
+        :param player_id: the id of the player to send to
+        :param message: message
+        """
         key = self.dic_players[player_id].socket
         self.Q_messages_send.put((key, message))
 
     def create_buttons_frame(self):
+        """
+        creates frame with buttons to add, delete and delete all users actions
+        :return: frame
+        """
         # creating widgets
         img_player_info = PhotoImage(file='images/buttons/user-info.png')
         img_player_disconnect = PhotoImage(file='images/buttons/delete-user.png')
@@ -146,6 +213,9 @@ class ServerWindow(WindowTemplate):
         return F_buttons
 
     def edit_server_frame(self):
+        """
+        edit main server frame
+        """
         # creating widgets
 
         F_addPlayer = self.create_add_player_frame(self.F_main_menu)
@@ -156,7 +226,7 @@ class ServerWindow(WindowTemplate):
         # adding image
         L_gif.load('images/gif/Rock-Paper-Scissors-smaller.gif')
         # place in Frame
-        self.F_main_menu.grid(row=0, column=0,padx=self.pad_x)
+        self.F_main_menu.grid(row=0, column=0, padx=self.pad_x)
         L_title.grid(row=0, column=0, columnspan=2, pady=self.pad_y * 2)
         self.listbox.frame.grid(row=1, column=0, columnspan=1, pady=self.pad_y)
         F_buttons.grid(row=1, column=1, columnspan=1, pady=self.pad_y, sticky='wn')
@@ -165,24 +235,14 @@ class ServerWindow(WindowTemplate):
 
         L_gif.grid(row=4, column=0, columnspan=2, pady=self.pad_y, padx=self.pad_x)
         # add to widgets list
-        self.add_widgets(L_gif, L_title,self.L_error_msg, self.listbox, self.F_main_menu, F_buttons)
-
-    def get_player_info(self):
-        self.click_sound_valid()
-        selected_player = self.listbox.selection()
-        if selected_player:
-            player_info = self.listbox.item(selected_player[0]).get("values")
-            player_id = player_info[0]
-            message = Message(player_id)
-            message.set_message_game_info_request()
-            self.send_message_to_player(player_id, message)
-            player_name = player_info[1]
-
-            logging.info('Getting player id: ' + str(player_id) + ', name: ' + player_name + 'information')
-        else:
-            self.click_sound_error()
+        self.add_widgets(L_gif, L_title, self.L_error_msg, self.listbox, self.F_main_menu, F_buttons)
 
     def create_add_player_frame(self, root):
+        """
+        creates frame to add new player
+        :param root: server main root
+        :return: frame
+        """
         F_addPlayer = Frame(root)
 
         L_addPlayer = Label(F_addPlayer, text="Player's name:", font=self.font, padx=self.pad_x)
@@ -203,6 +263,10 @@ class ServerWindow(WindowTemplate):
         return F_addPlayer
 
     def set_player_name(self, E_playerName):
+        """
+        get name from entry and checks if name is valid
+        :param E_playerName: Entry of add player frame
+        """
         name = E_playerName.get()
         if (len(name) != 0) and (name.isalpha() and (len(name) <= self.name_length)):
             self.click_sound_valid()
@@ -214,15 +278,13 @@ class ServerWindow(WindowTemplate):
             self.L_error_msg.configure(text="Error: Name can be only with letters, no spaces and in max length of 12")
 
     def exit_app(self):
+        """
+        closing all connections and closing the app
+        """
         self.delete_all_players_from_listbox()
-        # self.p.terminate()
         while bool(self.dic_players) is True:
             time.sleep(1)
 
         self.run_call = False
         self.event.set()
         super().exit_app()
-
-    def create_player_process(self, player_new):
-        player_process = multiprocessing.Process(target=GameWindow.GameWindow, args=(player_new.id, player_new.name,))
-        player_process.start()

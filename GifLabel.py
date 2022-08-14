@@ -11,6 +11,10 @@ class GifLabel(tk.Label):
     """
 
     def load(self, im):
+        """
+        loads image
+        :param im: image path
+        """
         if isinstance(im, str):
             im = Image.open(im)
         frames = []
@@ -34,10 +38,16 @@ class GifLabel(tk.Label):
             self.next_frame()
 
     def unload(self):
+        """
+        unload image
+        """
         self.config(image=None)
         self.frames = None
 
     def next_frame(self):
+        """
+        show next frame
+        """
         if self.frames:
             self.config(image=next(self.frames))
             self.after(self.delay, self.next_frame)

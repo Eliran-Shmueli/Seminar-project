@@ -3,8 +3,11 @@ from ServerWindow import ServerWindow
 
 
 def main():
+    """
+    starts the server
+    """
     if __name__ == "__main__":
-        server_frame = ServerWindow('R.P.S - Server')
+        server_frame = ServerWindow()
         server_frame.root.mainloop()
 
 

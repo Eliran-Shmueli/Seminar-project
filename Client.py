@@ -8,6 +8,13 @@ class Client:
     HEADERSIZE = 10
 
     def __init__(self, player_id, Q_messages_send, Q_messages_received, event):
+        """
+        init client server
+        :param player_id: the id of the player
+        :param Q_messages_send: queue of messages to send
+        :param Q_messages_received: queue of messages that the client server received
+        :param event: a stop event, in order to stop the server on demand
+        """
         host = socket.gethostname()
         port = 1231
         self.player_id = player_id
@@ -19,23 +26,12 @@ class Client:
         self.start_connections(host, port)
         self.run_cl()
 
-    def run_cl(self):
-        try:
-            while not self.event_stop.is_set():
-                events = self.sel.select(timeout=1)
-                if events:
-                    for key, mask in events:
-                        self.service_connection(key, mask)
-                # Check for a socket being monitored to continue.
-                if not self.sel.get_map():
-                    break
-        except OSError:
-            print("client id " + str(self.player_id) + " - Server is not connected")
-
-    # finally:
-    #    self.sel.close()
-
     def start_connections(self, host, port):
+        """
+        starts connection to server
+        :param host: server ip address
+        :param port: port number
+        """
         server_addr = (host, port)
 
         print(f"client id " + str(self.player_id) + " - Starting connection - player id " + str(
@@ -47,7 +43,30 @@ class Client:
         data = types.SimpleNamespace(byte_in=b"", byte_out=b"")
         self.sel.register(sock, events, data=data)
 
+    def run_cl(self):
+        """
+        runs client server, checking for input or output events until receiving stop event
+        """
+        try:
+            while not self.event_stop.is_set():
+                events = self.sel.select(timeout=1)
+                if events:
+                    for key, mask in events:
+                        self.service_connection(key, mask)
+                # Check for a socket being monitored to continue.
+                if not self.sel.get_map():
+                    break
+        except OSError:
+            print("client id " + str(self.player_id) + " - Server is not connected")
+        finally:
+            self.sel.close()
+
     def service_connection(self, key, mask):
+        """
+        receive and send data to server accordingly
+        :param key: socket
+        :param mask: events - sending or receiving
+        """
         sock = key.fileobj
         HEADERSIZE = 10
         data = key.data
@@ -63,11 +82,9 @@ class Client:
                 data.byte_in = b""
 
         if mask & selectors.EVENT_WRITE:
-
             if not data.byte_out and self.Q_messages_send.empty() is False:
                 data.byte_out = pickle.dumps(self.Q_messages_send.get())
                 data.byte_out = bytes(f"{len(data.byte_out):<{HEADERSIZE}}", 'utf-8') + data.byte_out
                 if data.byte_out:
                     sent = sock.send(data.byte_out)  # Should be ready to write
                     data.byte_out = data.byte_out[sent:]
-
