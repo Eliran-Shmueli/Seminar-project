@@ -85,8 +85,8 @@ class WindowTemplate:
         :param window_name: the title of the window
         """
         if is_server:
-          #  self.root.geometry('+0+0')
-          self.root.geometry('1500x750')
+            #  self.root.geometry('+0+0')
+            self.root.geometry('1500x750')
         else:
             self.config_geometry()
         self.root.resizable(True, True)
