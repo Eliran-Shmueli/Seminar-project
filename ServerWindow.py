@@ -401,7 +401,7 @@ class ServerWindow(WindowTemplate):
         else:
             list_obj = self.get_list_of_game_info()
         frame.add_data(list_obj)
-        frame.grid(row=4, column=0, columnspan=2, padx=self.pad_x)
+        frame.grid(row=4, column=0, columnspan=2, padx=self.pad_x,pady=self.pad_y)
         frame.is_show = True
 
     def get_list_of_game_info(self):
