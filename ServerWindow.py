@@ -1,6 +1,9 @@
 # Music by FASSounds from Pixabay
 import multiprocessing
+import operator
 import time
+
+import numpy as np
 
 from FrameInfo import FrameInfo
 from GifLabel import GifLabel
@@ -310,3 +313,10 @@ class ServerWindow(WindowTemplate):
         self.run_call = False
         self.event.set()
         super().exit_app()
+
+    def sort_player_info_dict(self):
+        """
+        sort dictionary player info by number of winnings
+        :return: sorted list
+        """
+        return sorted(self.dic_players_info.values(), key=operator.attrgetter('num_wins'))
