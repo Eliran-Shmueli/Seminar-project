@@ -318,6 +318,7 @@ class GameWindow(WindowTemplate):
         self.round_count = self.round_count + 1
         result = self.get_round_result()
         self.update_title_and_scores(result)
+        self.update_scores_and_round_labels()
         self.B_next.configure(state="normal")
         logging.info(
             'Player chose - ' + self.player_choice)
@@ -341,7 +342,8 @@ class GameWindow(WindowTemplate):
             self.activate_choices_buttons()
             self.message.set_message_choose()
             self.send_to_server(self.message)
-            self.update_scores_and_round_labels()
+            self.L_title.configure(text="Round: " + str(self.round_count))
+
         self.L_pc_pick.configure(text="Waiting for Pc to choose")
         self.L_player_pick.configure(text="Waiting for you to select")
 
@@ -373,11 +375,11 @@ class GameWindow(WindowTemplate):
 
     def update_scores_and_round_labels(self):
         """
-        updates the labels of round and scores
+        updates the labels of scores
         """
         self.L_player_score.configure(text=self.game_info.get_player_name() + ": " + str(self.player_score))
         self.L_pc_score.configure(text="Pc: " + str(self.pc_score))
-        self.L_title.configure(text="Round: " + str(self.round_count))
+
 
     def player_pick(self, pick):
         """

@@ -6,10 +6,12 @@ import time
 import numpy as np
 
 from FrameInfo import FrameInfo
+from FrameReport import FrameReport
+from GameInfo import GameInfo
 from GifLabel import GifLabel
 from PlayerInfo import PlayerInfo
 from ToolTip import CreateToolTip
-from WindowTemplate import WindowTemplate, ListBoxTemp
+from WindowTemplate import WindowTemplate, TreeviewTemp
 import GameWindow
 from tkinter import *
 from Player import Player
@@ -38,19 +40,23 @@ class ServerWindow(WindowTemplate):
         init server window
         """
         super().__init__("R.P.S - Server", True)
-        self.root.geometry('+0+0')
+        self.L_gif = None
         self.L_error_msg = None
         self.dic_players_connected = {}
         self.dic_players_info = {}
         self.player_id_count = 0
         self.load_background_music(0, 'sounds/best-time-112194.wav', -1)
         self.add_player_info(self.player_id_count, "Pc")
+        self.F_report_players = None
+        self.F_report_games = None
         self.F_main_menu = Frame(self.root)
         self.F_player_info = FrameInfo(self.root, self.F_main_menu)
         self.add_widgets(self.F_player_info.list_widgets)
-        self.listbox = ListBoxTemp(self.F_main_menu, 6, 'browse')
-        self.edit_listbox()
+        self.treeview = TreeviewTemp(self.F_main_menu, 9, 'browse', ('id', 'name'),False)
+        self.treeview.add_headers([('id', "Player's id"), ('name', "Player's name")])
         self.edit_server_frame()
+        self.init_players_report_frame()
+        self.init_games_report_frame()
         self.T_server = threading.Thread(
             target=Server(self.Q_messages_send, self.Q_messages_received, self.dic_players_connected, self.event).run)
         self.T_server.start()
@@ -75,7 +81,7 @@ class ServerWindow(WindowTemplate):
         self.player_id_count = self.player_id_count + 1
         player_new = Player(self.player_id_count, name)
         self.add_player_info(player_new.get_id(), player_new.get_name())
-        self.listbox.insert('', END, values=(self.player_id_count, name))
+        self.treeview.insert('', END, values=(self.player_id_count, name))
         create_player_process(player_new)
         self.dic_players_connected[self.player_id_count] = player_new
         logging.info('Player ' + "Id: " + str(self.player_id_count) + ", Name: " + name + ' was added')
@@ -108,6 +114,11 @@ class ServerWindow(WindowTemplate):
             self.update_information(player_info, game_info)
 
     def update_information(self, new_player_info, game_info):
+        """
+        update players and games dictionaries
+        :param new_player_info: new player info
+        :param game_info: new game info
+        """
         player_info = self.dic_players_info[new_player_info.get_id()]
         player_info.update_info(new_player_info, game_info)
 
@@ -120,21 +131,14 @@ class ServerWindow(WindowTemplate):
         self.F_player_info.edit(player_info)
         self.F_player_info.grid(row=0, column=0)
 
-    def edit_listbox(self):
-        """
-        edits listbox heading
-        """
-        self.listbox.heading('id', text="Player's id", anchor=W)
-        self.listbox.heading('name', text="Player's name", anchor=W)
-
     def get_player_info(self):
         """
         get selected player information from client
         """
         self.click_sound_valid()
-        selected_player = self.listbox.selection()
+        selected_player = self.treeview.selection()
         if selected_player:
-            player_from_listbox = self.listbox.item(selected_player[0]).get("values")
+            player_from_listbox = self.treeview.item(selected_player[0]).get("values")
             player_id = player_from_listbox[0]
             player_name = player_from_listbox[1]
             player_info = self.dic_players_info[player_id]
@@ -148,9 +152,9 @@ class ServerWindow(WindowTemplate):
         delete selected player by the user from listbox and disconnect it
         """
         self.click_sound_valid()
-        selected_player = self.listbox.selection()
+        selected_player = self.treeview.selection()
         if selected_player:
-            player_info = self.listbox.item(selected_player[0]).get("values")
+            player_info = self.treeview.item(selected_player[0]).get("values")
             player_id = player_info[0]
             player_name = player_info[1]
             self.delete_player_by_id(player_id)
@@ -162,7 +166,7 @@ class ServerWindow(WindowTemplate):
         """
         delete all players from listbox and disconnect all of them
         """
-        if len(self.listbox.get_children()) != 0:
+        if len(self.treeview.get_children()) != 0:
             self.click_sound_valid()
             for player_id in list(self.dic_players_connected):
                 self.delete_player_by_id(player_id)
@@ -174,12 +178,12 @@ class ServerWindow(WindowTemplate):
         delete player from the listbox and disconnect him by id
         :param player_id: player's id
         """
-        player_list = self.listbox.get_children()
+        player_list = self.treeview.get_children()
         for player_index in player_list:
-            player_index_id = self.listbox.item(player_index).get("values")[0]
+            player_index_id = self.treeview.item(player_index).get("values")[0]
             if player_index_id == player_id:
                 if self.dic_players_connected[player_id].socket is not None:
-                    self.listbox.delete(player_index)
+                    self.treeview.delete(player_index)
                     self.disconnect_client(player_id)
                 else:
                     time.sleep(1)
@@ -212,6 +216,10 @@ class ServerWindow(WindowTemplate):
         img_player_info = PhotoImage(file='images/buttons/user-info.png')
         img_player_disconnect = PhotoImage(file='images/buttons/delete-user.png')
         img_player_disconnect_all = PhotoImage(file='images/buttons/delete-all.png')
+        img_players_report = PhotoImage(file='images/buttons/user_report.png')
+        img_players_report_selected = PhotoImage(file='images/buttons/user_reports_selected.png')
+        img_games_report = PhotoImage(file='images/buttons/game_report.png')
+        img_games_report_selected = PhotoImage(file='images/buttons/game_report_selected.png')
 
         F_buttons = Frame(self.F_main_menu)
         B_player_info = Button(F_buttons, image=img_player_info, font=self.font, bd=0,
@@ -220,21 +228,31 @@ class ServerWindow(WindowTemplate):
                                      command=self.delete_selected_player_from_listbox)
         B_disconnect_all = Button(F_buttons, image=img_player_disconnect_all, font=self.font, bd=0,
                                   command=self.delete_all_players_from_listbox)
-
+        B_show_players_report = Button(F_buttons, image=img_players_report, font=self.font, bd=0,
+                                       command=self.show_players_report)
+        B_show_games_report = Button(F_buttons, image=img_games_report, font=self.font, bd=0,
+                                     command=self.delete_all_players_from_listbox)
         B_player_info.image = img_player_info
         B_disconnect_player.image = img_player_disconnect
         B_disconnect_all.image = img_player_disconnect_all
+        B_show_players_report.image = img_players_report
+        B_show_games_report.image = img_games_report
 
         # place in grid
         B_player_info.grid(row=0, column=0, sticky='ew')
-        B_disconnect_player.grid(row=1, column=0, pady=self.pad_y * 2, sticky='ew')
+        B_disconnect_player.grid(row=1, column=0, pady=self.pad_y, sticky='ew')
         B_disconnect_all.grid(row=2, column=0, sticky='ew')
+        B_show_players_report.grid(row=3, column=0, pady=self.pad_y, sticky='ew')
+        B_show_games_report.grid(row=4, column=0, sticky='ew')
 
         CreateToolTip(B_player_info, text="Get player info")
         CreateToolTip(B_disconnect_player, text="Disconnect selected player")
         CreateToolTip(B_disconnect_all, text="Disconnect all players")
+        CreateToolTip(B_show_players_report, text="Show players report")
+        CreateToolTip(B_show_games_report, text="Show games report")
         # add to widgets list
-        self.add_widgets(B_disconnect_player, B_disconnect_all, B_player_info)
+        self.add_widgets(B_disconnect_player, B_disconnect_all, B_player_info, B_show_players_report,
+                         B_show_games_report)
         return F_buttons
 
     def edit_server_frame(self):
@@ -246,21 +264,22 @@ class ServerWindow(WindowTemplate):
         F_addPlayer = self.create_add_player_frame(self.F_main_menu)
         L_title = Label(self.F_main_menu, text="R.P.S - Server", font=self.title_font)
         self.L_error_msg = Label(self.F_main_menu, text="", font=self.font)
-        L_gif = GifLabel(self.F_main_menu)
+        self.L_gif = GifLabel(self.F_main_menu)
         F_buttons = self.create_buttons_frame()
         # adding image
-        L_gif.load('images/gif/Rock-Paper-Scissors-smaller.gif')
+        self.L_gif.load('images/gif/Rock-Paper-Scissors-smaller.gif')
+
         # place in Frame
         self.F_main_menu.grid(row=0, column=0, padx=self.pad_x)
         L_title.grid(row=0, column=0, columnspan=2, pady=self.pad_y * 2)
-        self.listbox.frame.grid(row=1, column=0, columnspan=1, pady=self.pad_y)
+        self.treeview.frame.grid(row=1, column=0, columnspan=1, pady=self.pad_y)
         F_buttons.grid(row=1, column=1, columnspan=1, pady=self.pad_y, sticky='wn')
         F_addPlayer.grid(row=2, column=0, columnspan=2, pady=self.pad_y, sticky='w')
         self.L_error_msg.grid(row=3, column=0, columnspan=2, sticky='w')
 
-        L_gif.grid(row=4, column=0, columnspan=2, pady=self.pad_y, padx=self.pad_x)
+        self.L_gif.grid(row=4, column=0, columnspan=2, pady=self.pad_y, padx=self.pad_x)
         # add to widgets list
-        self.add_widgets(L_gif, L_title, self.L_error_msg, self.listbox, self.F_main_menu, F_buttons)
+        self.add_widgets(self.L_gif, L_title, self.L_error_msg, self.treeview, self.F_main_menu, F_buttons)
 
     def create_add_player_frame(self, root):
         """
@@ -320,3 +339,30 @@ class ServerWindow(WindowTemplate):
         :return: sorted list
         """
         return sorted(self.dic_players_info.values(), key=operator.attrgetter('num_wins'))
+
+    def init_players_report_frame(self):
+        """
+        init and edit players report frame
+        """
+        columns = list(PlayerInfo.tags.keys())
+        tags = self.return_list_of_tuples(PlayerInfo.tags)
+        self.F_report_players = FrameReport(self.root, "Players report", columns, tags,True)
+
+    def init_games_report_frame(self):
+        """
+        init and edit games report frame
+        """
+        columns = list(GameInfo.tags.keys())
+        tags = self.return_list_of_tuples(GameInfo.tags)
+        self.F_report_games = FrameReport(self.F_main_menu, "Games report", columns, tags,True)
+
+    def show_players_report(self):
+        self.L_gif.grid_forget()
+        self.F_report_players.clear_data()
+        sorted_players_list = self.sort_player_info_dict()
+        # self.F_report_players.add_data()
+        self.F_report_players.grid(row=5, column=0, columnspan=2, pady=self.pad_y, padx=self.pad_x)
+
+    def return_list_of_tuples(self, dict_data):
+        list = [(k, v) for k, v in dict_data.items()]
+        return list

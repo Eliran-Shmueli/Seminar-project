@@ -3,6 +3,11 @@ def plus_one(variable):
 
 
 class PlayerInfo:
+    tags = {'id': "Player's id", 'name': "Player's name", 'num_games': 'Number of games',
+            'num_wins': 'Number of wins',
+            'num_losses': 'Number of losses', 'num_ties': 'Number of ties', 'num_rock': 'Selected rock',
+            'num_paper': 'Selected paper', 'num_scissors': 'Selected Scissors'}
+
     def __init__(self, player_id, player_name):
         """
         init Player_info
@@ -18,6 +23,7 @@ class PlayerInfo:
         self.num_rock = 0
         self.num_paper = 0
         self.num_scissors = 0
+
         self.List_games = []
 
     def get_name(self):
