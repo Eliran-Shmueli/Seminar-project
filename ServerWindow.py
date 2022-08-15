@@ -47,16 +47,13 @@ class ServerWindow(WindowTemplate):
         self.player_id_count = 0
         self.load_background_music(0, 'sounds/best-time-112194.wav', -1)
         self.add_player_info(self.player_id_count, "Pc")
-        self.F_report_players = None
-        self.F_report_games = None
         self.F_main_menu = Frame(self.root)
+        self.F_report_players = self.init_report_frame(PlayerInfo,"Players report")
+        self.F_report_games = self.init_report_frame(GameInfo,"Games report")
         self.F_player_info = FrameInfo(self.root, self.F_main_menu)
         self.add_widgets(self.F_player_info.list_widgets)
         self.treeview = None
-
         self.edit_server_frame()
-        self.init_players_report_frame()
-        self.init_games_report_frame()
         self.treeview.add_headers([('id', "Player's id"), ('name', "Player's name")])
         self.T_server = threading.Thread(
             target=Server(self.Q_messages_send, self.Q_messages_received, self.dic_players_connected, self.event).run)
@@ -229,9 +226,10 @@ class ServerWindow(WindowTemplate):
                                   command=self.delete_all_players_from_listbox)
         B_show_players_report = Button(F_buttons, image=img_players_report, font=self.font, bd=0,
                                        command=lambda: self.show_report_frame(self.F_report_players,
-                                                                              self.F_report_games,True))
+                                                                              self.F_report_games, True))
         B_show_games_report = Button(F_buttons, image=img_games_report, font=self.font, bd=0,
-                                     command=lambda: self.show_report_frame(self.F_report_games, self.F_report_players,False))
+                                     command=lambda: self.show_report_frame(self.F_report_games, self.F_report_players,
+                                                                            False))
         B_player_info.image = img_player_info
         B_disconnect_player.image = img_player_disconnect
         B_disconnect_all.image = img_player_disconnect_all
@@ -340,25 +338,26 @@ class ServerWindow(WindowTemplate):
         """
         return sorted(self.dic_players_info.values(), key=operator.attrgetter('num_wins'), reverse=True)
 
-    def init_players_report_frame(self):
+    def init_report_frame(self, obj,title):
         """
-        init and edit players report frame
+        init and edit report frame
+        :param obj: PlayerInfo or GameInfo
+        :param title: str
+        :return: FrameReport obj
         """
-        columns = list(PlayerInfo.tags.keys())
-        tags = self.return_list_of_tuples(PlayerInfo.tags)
-        self.F_report_players = FrameReport(self.F_main_menu, "Players report", columns, tags, True)
-        self.add_widgets(self.F_report_players.list_widgets)
-
-    def init_games_report_frame(self):
-        """
-        init and edit games report frame
-        """
-        columns = list(GameInfo.tags.keys())
-        tags = self.return_list_of_tuples(GameInfo.tags)
-        self.F_report_games = FrameReport(self.F_main_menu, "Games report", columns, tags, True)
-        self.add_widgets(self.F_report_games.list_widgets)
+        columns = list(obj.tags.keys())
+        tags = self.return_list_of_tuples(obj.tags)
+        frame_report = FrameReport(self.F_main_menu, title, columns, tags, True)
+        self.add_widgets(frame_report.list_widgets)
+        return frame_report
 
     def show_report_frame(self, frame_show, frame_hide, is_player_report):
+        """
+        show or hide report frame
+        :param frame_show: frame to show, if is already shown hide frame
+        :param frame_hide: frame to hide if is shown
+        :param is_player_report: true if frame_shoe is player_report, else false
+        """
         if not frame_show.is_show:
             self.click_sound_valid()
             self.forget_frame(frame_hide)
@@ -366,12 +365,22 @@ class ServerWindow(WindowTemplate):
         else:
             self.click_sound_error()
             self.forget_frame(frame_show)
+            self.L_gif.grid(row=4, column=0, columnspan=2, pady=self.pad_y, padx=self.pad_x)
+            self.L_gif.is_show=True
 
     def return_list_of_tuples(self, dict_data):
-        list = [(k, v) for k, v in dict_data.items()]
-        return list
+        """
+        returns list of tuples from dictionary
+        :param dict_data: dictionary
+        :return: list of tuples
+        """
+        return [(k, v) for k, v in dict_data.items()]
 
     def forget_frame(self, frame):
+        """
+         frame and L_gif if frame or L_gif is in window
+        :param frame: frame to remove from window
+        """
         if frame.is_show:
             frame.grid_forget()
             frame.clear_data()
@@ -381,6 +390,12 @@ class ServerWindow(WindowTemplate):
             self.L_gif.is_show = False
 
     def grid_report_frame(self, frame, is_player_report):
+        """
+        add frame report to the window.
+        choose data according to if frame is players report
+        :param frame: frame to add to the window
+        :param is_player_report: true - player report, false - games report
+        """
         if is_player_report:
             list_obj = self.sort_player_info_dict()
         else:
@@ -390,6 +405,10 @@ class ServerWindow(WindowTemplate):
         frame.is_show = True
 
     def get_list_of_game_info(self):
+        """
+        returns list of all the game_info from players
+        :return: list of game_info
+        """
         list_gameinfo = []
         for player in self.dic_players_info.values():
             for game in player.List_games:
