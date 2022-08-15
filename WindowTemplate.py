@@ -198,7 +198,8 @@ class WindowTemplate:
                 self.widgets_dic["button"].append(widget)
             if (type(widget) == TreeviewTemp) or (type(widget) == Entry):
                 self.widgets_dic["listbox"].append(widget)
-            if (type(widget) == Frame) or (type(widget) == Tk) or (type(widget) == FrameInfo) or (type(widget) == FrameReport):
+            if (type(widget) == Frame) or (type(widget) == Tk) or (type(widget) == FrameInfo) or (
+                    type(widget) == FrameReport):
                 self.widgets_dic["frame"].append(widget)
             if type(widget) == list:
                 for obj in widget:

@@ -7,7 +7,7 @@ class TreeviewTemp(ttk.Treeview):
     row_index = 0
     font = 'Helvetica 12'
 
-    def __init__(self, master, height, mode, columns,change_width):
+    def __init__(self, master, height, mode, columns, change_width):
         """
         init ListBoxTemp
         :param master: main root

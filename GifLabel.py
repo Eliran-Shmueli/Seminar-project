@@ -9,7 +9,8 @@ class GifLabel(tk.Label):
     A Label that displays images, and plays them if they are gifs
     :im: A PIL Image instance or a string filename
     """
-    def __init__(self,root):
+
+    def __init__(self, root):
         """
         init GifLabel
         :param root: root window

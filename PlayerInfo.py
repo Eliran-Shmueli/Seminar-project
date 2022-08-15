@@ -23,7 +23,6 @@ class PlayerInfo:
         self.num_rock = 0
         self.num_paper = 0
         self.num_scissors = 0
-
         self.List_games = []
 
     def get_name(self):

@@ -358,7 +358,7 @@ class GameWindow(WindowTemplate):
         self.L_round_result_title.configure(text="")
 
     def update_round_label(self):
-         self.L_title.configure(text="Round: " + str(self.round_count))
+        self.L_title.configure(text="Round: " + str(self.round_count))
 
     def reset_game(self):
         """
@@ -383,7 +383,6 @@ class GameWindow(WindowTemplate):
         """
         self.L_player_score.configure(text=self.game_info.get_player_name() + ": " + str(self.player_score))
         self.L_pc_score.configure(text="Pc: " + str(self.pc_score))
-
 
     def player_pick(self, pick):
         """

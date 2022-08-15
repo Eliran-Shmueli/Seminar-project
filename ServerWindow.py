@@ -2,9 +2,6 @@
 import multiprocessing
 import operator
 import time
-
-import numpy as np
-
 from FrameInfo import FrameInfo
 from FrameReport import FrameReport
 from GameInfo import GameInfo
@@ -31,6 +28,15 @@ def create_player_process(player_new):
     player_process.start()
 
 
+def return_list_of_tuples(dict_data):
+    """
+    returns list of tuples from dictionary
+    :param dict_data: dictionary
+    :return: list of tuples
+    """
+    return [(k, v) for k, v in dict_data.items()]
+
+
 class ServerWindow(WindowTemplate):
     pad_y = 10
     pad_x = 10
@@ -40,17 +46,19 @@ class ServerWindow(WindowTemplate):
         init server window
         """
         super().__init__("R.P.S - Server", True)
+        self.B_show_games_report = None
+        self.B_show_players_report = None
         self.L_gif = None
         self.L_error_msg = None
         self.dic_players_connected = {}
         self.dic_players_info = {}
         self.player_id_count = 0
         self.load_background_music(0, 'sounds/best-time-112194.wav', -1)
-        self.add_player_info(self.player_id_count, "Pc")
         self.F_main_menu = Frame(self.root)
-        self.F_report_players = self.init_report_frame(PlayerInfo,"Players report")
-        self.F_report_games = self.init_report_frame(GameInfo,"Games report")
+        self.F_report_players = self.init_report_frame(PlayerInfo, "Players report")
+        self.F_report_games = self.init_report_frame(GameInfo, "Games report")
         self.F_player_info = FrameInfo(self.root, self.F_main_menu)
+        self.add_player_info(self.player_id_count, "Pc")
         self.add_widgets(self.F_player_info.list_widgets)
         self.treeview = None
         self.edit_server_frame()
@@ -69,6 +77,7 @@ class ServerWindow(WindowTemplate):
         """
         player_info = PlayerInfo(player_id, name)
         self.dic_players_info[player_id] = player_info
+        self.update_report_frame(self.F_report_players, True)
 
     def add_new_player(self, name):
         """
@@ -110,6 +119,8 @@ class ServerWindow(WindowTemplate):
         if message.is_message_game_info_request() and message.is_message_have_data():
             player_info, game_info = message.data
             self.update_information(player_info, game_info)
+            self.update_report_frame(self.F_report_players, True)
+            self.update_report_frame(self.F_report_games, False)
 
     def update_information(self, new_player_info, game_info):
         """
@@ -224,17 +235,18 @@ class ServerWindow(WindowTemplate):
                                      command=self.delete_selected_player_from_listbox)
         B_disconnect_all = Button(F_buttons, image=img_player_disconnect_all, font=self.font, bd=0,
                                   command=self.delete_all_players_from_listbox)
-        B_show_players_report = Button(F_buttons, image=img_players_report, font=self.font, bd=0,
-                                       command=lambda: self.show_report_frame(self.F_report_players,
-                                                                              self.F_report_games, True))
-        B_show_games_report = Button(F_buttons, image=img_games_report, font=self.font, bd=0,
-                                     command=lambda: self.show_report_frame(self.F_report_games, self.F_report_players,
-                                                                            False))
+        self.B_show_players_report = Button(F_buttons, image=img_players_report, font=self.font, bd=0,
+                                            command=lambda: self.show_report_frame(self.F_report_players,
+                                                                                   self.F_report_games, True))
+        self.B_show_games_report = Button(F_buttons, image=img_games_report, font=self.font, bd=0,
+                                          command=lambda: self.show_report_frame(self.F_report_games,
+                                                                                 self.F_report_players,
+                                                                                 False))
         B_player_info.image = img_player_info
         B_disconnect_player.image = img_player_disconnect
         B_disconnect_all.image = img_player_disconnect_all
-        B_show_players_report.image = img_players_report
-        B_show_games_report.image = img_games_report
+        self.B_show_players_report.image = img_players_report
+        self.B_show_games_report.image = img_games_report
         self.treeview = TreeviewTemp(F_buttons, 9, 'browse', ('id', 'name'), False)
 
         # place in grid
@@ -242,18 +254,40 @@ class ServerWindow(WindowTemplate):
         B_player_info.grid(row=0, column=1, sticky='ew')
         B_disconnect_player.grid(row=1, column=1, pady=self.pad_y, sticky='ew')
         B_disconnect_all.grid(row=2, column=1, sticky='ew')
-        B_show_players_report.grid(row=3, column=1, pady=self.pad_y, sticky='ew')
-        B_show_games_report.grid(row=4, column=1, sticky='ew')
+        self.B_show_players_report.grid(row=3, column=1, pady=self.pad_y, sticky='ew')
+        self.B_show_games_report.grid(row=4, column=1, sticky='ew')
 
         CreateToolTip(B_player_info, text="Get player info")
         CreateToolTip(B_disconnect_player, text="Disconnect selected player")
         CreateToolTip(B_disconnect_all, text="Disconnect all players")
-        CreateToolTip(B_show_players_report, text="Show players report")
-        CreateToolTip(B_show_games_report, text="Show games report")
+        CreateToolTip(self.B_show_players_report, text="Show/Hide players report")
+        CreateToolTip(self.B_show_games_report, text="Show/Hide games report")
         # add to widgets list
-        self.add_widgets(B_disconnect_player, B_disconnect_all, B_player_info, B_show_players_report,
-                         B_show_games_report)
+        self.add_widgets(B_disconnect_player, B_disconnect_all, B_player_info, self.B_show_players_report,
+                         self.B_show_games_report)
         return F_buttons
+
+    def change_reports_buttons(self):
+        """
+        change buttons images according to frames report states
+        """
+        if self.F_report_players.is_show:
+            img_players_report_selected = PhotoImage(file='images/buttons/user_reports_selected.png')
+            self.B_show_players_report.configure(image=img_players_report_selected)
+            self.B_show_players_report.image = img_players_report_selected
+        else:
+            img_players_report = PhotoImage(file='images/buttons/user_report.png')
+            self.B_show_players_report.configure(image=img_players_report)
+            self.B_show_players_report.image = img_players_report
+
+        if self.F_report_games.is_show:
+            img_games_report_selected = PhotoImage(file='images/buttons/game_report_selected.png')
+            self.B_show_games_report.configure(image=img_games_report_selected)
+            self.B_show_games_report.image = img_games_report_selected
+        else:
+            img_games_report = PhotoImage(file='images/buttons/game_report.png')
+            self.B_show_games_report.configure(image=img_games_report)
+            self.B_show_games_report.image = img_games_report
 
     def edit_server_frame(self):
         """
@@ -338,7 +372,7 @@ class ServerWindow(WindowTemplate):
         """
         return sorted(self.dic_players_info.values(), key=operator.attrgetter('num_wins'), reverse=True)
 
-    def init_report_frame(self, obj,title):
+    def init_report_frame(self, obj, title):
         """
         init and edit report frame
         :param obj: PlayerInfo or GameInfo
@@ -346,7 +380,7 @@ class ServerWindow(WindowTemplate):
         :return: FrameReport obj
         """
         columns = list(obj.tags.keys())
-        tags = self.return_list_of_tuples(obj.tags)
+        tags = return_list_of_tuples(obj.tags)
         frame_report = FrameReport(self.F_main_menu, title, columns, tags, True)
         self.add_widgets(frame_report.list_widgets)
         return frame_report
@@ -366,15 +400,8 @@ class ServerWindow(WindowTemplate):
             self.click_sound_error()
             self.forget_frame(frame_show)
             self.L_gif.grid(row=4, column=0, columnspan=2, pady=self.pad_y, padx=self.pad_x)
-            self.L_gif.is_show=True
-
-    def return_list_of_tuples(self, dict_data):
-        """
-        returns list of tuples from dictionary
-        :param dict_data: dictionary
-        :return: list of tuples
-        """
-        return [(k, v) for k, v in dict_data.items()]
+            self.L_gif.is_show = True
+        self.change_reports_buttons()
 
     def forget_frame(self, frame):
         """
@@ -383,7 +410,6 @@ class ServerWindow(WindowTemplate):
         """
         if frame.is_show:
             frame.grid_forget()
-            frame.clear_data()
             frame.is_show = False
         if self.L_gif.is_show:
             self.L_gif.grid_forget()
@@ -396,13 +422,23 @@ class ServerWindow(WindowTemplate):
         :param frame: frame to add to the window
         :param is_player_report: true - player report, false - games report
         """
-        if is_player_report:
-            list_obj = self.sort_player_info_dict()
-        else:
-            list_obj = self.get_list_of_game_info()
-        frame.add_data(list_obj)
-        frame.grid(row=4, column=0, columnspan=2, padx=self.pad_x,pady=self.pad_y)
         frame.is_show = True
+        self.update_report_frame(frame, is_player_report)
+        frame.grid(row=4, column=0, columnspan=2, padx=self.pad_x, pady=self.pad_y)
+
+    def update_report_frame(self, frame, is_player_report):
+        """
+        update report if is_show is true
+        :param frame: player report or games report
+        :param is_player_report: true - player report, false - games report
+        """
+        if frame.is_show:
+            frame.clear_data()
+            if is_player_report:
+                list_obj = self.sort_player_info_dict()
+            else:
+                list_obj = self.get_list_of_game_info()
+            frame.add_data(list_obj)
 
     def get_list_of_game_info(self):
         """
