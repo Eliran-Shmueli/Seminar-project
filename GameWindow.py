@@ -318,7 +318,7 @@ class GameWindow(WindowTemplate):
         self.round_count = self.round_count + 1
         result = self.get_round_result()
         self.update_title_and_scores(result)
-        self.update_scores_and_round_labels()
+        self.update_scores()
         self.B_next.configure(state="normal")
         logging.info(
             'Player chose - ' + self.player_choice)
@@ -342,7 +342,7 @@ class GameWindow(WindowTemplate):
             self.activate_choices_buttons()
             self.message.set_message_choose()
             self.send_to_server(self.message)
-            self.L_title.configure(text="Round: " + str(self.round_count))
+            self.update_round_label()
 
         self.L_pc_pick.configure(text="Waiting for Pc to choose")
         self.L_player_pick.configure(text="Waiting for you to select")
@@ -357,6 +357,9 @@ class GameWindow(WindowTemplate):
         self.B_next.configure(state="disabled")
         self.L_round_result_title.configure(text="")
 
+    def update_round_label(self):
+         self.L_title.configure(text="Round: " + str(self.round_count))
+
     def reset_game(self):
         """
         reset all variables and show the main menu
@@ -368,12 +371,13 @@ class GameWindow(WindowTemplate):
         self.round_count = 1
         self.player_score = 0
         self.pc_score = 0
-        self.update_scores_and_round_labels()
+        self.update_scores()
+        self.update_round_label()
         self.activate_choices_buttons()
         self.F_final_result.grid_forget()
         self.start_game()
 
-    def update_scores_and_round_labels(self):
+    def update_scores(self):
         """
         updates the labels of scores
         """
@@ -419,16 +423,19 @@ class GameWindow(WindowTemplate):
             self.load_background_music(1, 'sounds/tie.wav', self.num_music_loops)
             self.L_final_result_img.configure(image=self.images.get("tie"))
             self.game_info.winner = "Tie"
+            self.player_info.increase_num_ties()
             logging.info('The game ended in a tie')
         elif self.player_score > self.pc_score:
             self.load_background_music(1, 'sounds/mixkit-video-game-win-2016.wav', self.num_music_loops)
             self.L_final_result_img.configure(image=self.images.get("win"))
             self.game_info.winner = self.player_info.get_name()
+            self.player_info.increase_num_wins()
             logging.info('The player won the game')
         else:
             self.load_background_music(1, 'sounds/mixkit-horror-lose-2028.wav', self.num_music_loops)
             self.L_final_result_img.configure(image=self.images.get("lose"))
             self.game_info.winner = "Pc"
+            self.player_info.increase_num_losses()
             logging.info('The player lost the game')
 
     def update_title_and_scores(self, result):
@@ -440,17 +447,14 @@ class GameWindow(WindowTemplate):
         if result == "tie":
             self.load_background_music(1, 'sounds/tie.wav', self.num_music_loops)
             self.L_round_result_title.configure(text="It's a tie")
-            self.player_info.increase_num_ties()
         elif result == "win":
             self.load_background_music(1, 'sounds/mixkit-video-game-win-2016.wav', self.num_music_loops)
             self.L_round_result_title.configure(text="You won")
             self.player_score = self.player_score + 1
-            self.player_info.increase_num_wins()
         elif result == "lose":
             self.load_background_music(1, 'sounds/mixkit-horror-lose-2028.wav', self.num_music_loops)
             self.L_round_result_title.configure(text="You lost")
             self.pc_score = self.pc_score + 1
-            self.player_info.increase_num_losses()
 
     def get_round_result(self):
         """

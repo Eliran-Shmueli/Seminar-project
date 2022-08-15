@@ -7,6 +7,7 @@ import logging
 import pygame
 import time
 from FrameInfo import FrameInfo
+from FrameReport import FrameReport
 from TreeviewTemp import TreeviewTemp
 
 
@@ -197,7 +198,7 @@ class WindowTemplate:
                 self.widgets_dic["button"].append(widget)
             if (type(widget) == TreeviewTemp) or (type(widget) == Entry):
                 self.widgets_dic["listbox"].append(widget)
-            if (type(widget) == Frame) or (type(widget) == Tk) or (type(widget) == FrameInfo):
+            if (type(widget) == Frame) or (type(widget) == Tk) or (type(widget) == FrameInfo) or (type(widget) == FrameReport):
                 self.widgets_dic["frame"].append(widget)
             if type(widget) == list:
                 for obj in widget:

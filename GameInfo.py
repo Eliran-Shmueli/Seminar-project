@@ -18,9 +18,14 @@ class GameInfo:
         self.player_name = player_name
         self.pc_id =0
         self.pc_name = "Pc"
-        self.time_created = time()
+        self.time_created = self.get_date_and_time()
         self.num_rounds = 0
         self.winner = None
+
+    def get_date_and_time(self):
+        time = datetime.now()
+        return time.strftime("%d/%m/%Y,  %H:%M:%S")
+
 
     def increase_num_rounds(self):
         """
@@ -46,4 +51,4 @@ class GameInfo:
         """
         self.winner = None
         self.num_rounds = 0
-        self.time_created = time()
+        self.time_created = self.get_date_and_time()
