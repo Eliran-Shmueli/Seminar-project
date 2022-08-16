@@ -4,7 +4,7 @@ from tkinter import *
 
 class FrameReport(Frame):
     pad_y = 10
-    pad_y_label = 2
+    pad_y_label = 6
     pad_x = 10
     title_font = 'Helvetica 20 underline bold'
     font = 'Helvetica 12'
@@ -39,7 +39,7 @@ class FrameReport(Frame):
         """
         self.L_title = Label(self, text=title, font=self.title_font)
 
-        self.L_title.grid(row=0, column=0, columnspan=1)
+        self.L_title.grid(row=0, column=0, columnspan=1, pady=self.pad_y_label)
         self.report_treeview.frame.grid(row=1, column=0, columnspan=1, pady=self.pad_y)
 
         self.list_widgets = [self, self.L_title, self.report_treeview]
