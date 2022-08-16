@@ -106,7 +106,9 @@ class Server:
                 self.message.set_message_accepted()
             if message_received.is_message_choose():
                 self.message.set_message_choose()
-                self.message.add_data_to_message(self.computer_pick(message_received.id))
+                choice = self.computer_pick()
+                self.message.add_data_to_message(choice)
+                self.log_message("Selected " + choice + ", sends to client " + str(id))
             self.append_message(key.data, self.message)
 
     def append_message(self, data, message):
@@ -138,11 +140,10 @@ class Server:
         log.add_data_to_message(logs)
         self.Q_messages_received.put((None, log))
 
-    def computer_pick(self, id):
+    def computer_pick(self):
         """
         generate random option for the computer
         :return: "rock"|"paper"|"scissors"
         """
         choice = random.choice(["rock", "paper", "scissors"])
-        self.log_message("Selected " + choice + ", sends to client " + str(id))
         return choice
