@@ -78,7 +78,7 @@ class Server:
             if recv_data:
                 data.byte_in += recv_data
                 message_received = pickle.loads(data.byte_in[self.HEADERSIZE:])
-                self.log_message("Info from client "+ str(message_received.id)+": "+ message_received.message)
+                self.log_message("Info from client " + str(message_received.id) + ": " + message_received.message)
                 self.actions(message_received, key)
                 data.byte_in = b''
         if mask & selectors.EVENT_WRITE:
@@ -138,11 +138,11 @@ class Server:
         log.add_data_to_message(logs)
         self.Q_messages_received.put((None, log))
 
-    def computer_pick(self,id):
+    def computer_pick(self, id):
         """
         generate random option for the computer
         :return: "rock"|"paper"|"scissors"
         """
         choice = random.choice(["rock", "paper", "scissors"])
-        self.log_message("Selected " + choice+", sends to client "+ str(id))
+        self.log_message("Selected " + choice + ", sends to client " + str(id))
         return choice
