@@ -42,7 +42,6 @@ class WindowTemplate:
         self.event = threading.Event()
         logging.basicConfig(filename=window_name + '.log', filemode='w', format='%(asctime)s - %(message)s',
                             level=logging.INFO)
-        print('thread id ' + str(threading.get_ident()))
         self.init_background_music()
         self.config_template(window_name, is_server)
         self.add_widgets(self.root)
@@ -151,18 +150,6 @@ class WindowTemplate:
         pygame.mixer.quit()
         self.root.quit()
 
-    def change_buttons_color(self):
-        """
-        changing buttons color
-        """
-        color = askcolor()[1]
-        if color is not None:
-            logging.info('The buttons color was changed to ' + color)
-            for key in self.widgets_dic.keys():
-                if key == "button":
-                    for widget in self.widgets_dic[key]:
-                        widget.configure(bg=color)
-
     def change_background_color(self):
         """
         changing background color
@@ -212,7 +199,7 @@ class WindowTemplate:
 
     def call_after_func(self):
         """
-        recursive function that calls function check_queue_received every 1 seconds,
+        a loop function that calls function check_queue_received every 1 seconds,
         """
         if self.run_call is True:
             self.root.after(1000, self.check_queue_received)

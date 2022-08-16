@@ -104,7 +104,7 @@ class FrameInfo(Frame):
         axes_selections.set_ylabel('Number of time selected')
 
         axes_results.bar(results, results_counter)
-        axes_results.set_title("The player's round results history")
+        axes_results.set_title("The player's game results history")
         axes_results.set_ylabel('Counter')
 
         canvas_selection.get_tk_widget().grid(row=4, column=0, columnspan=2, pady=self.pad_y, padx=self.pad_x)

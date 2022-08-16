@@ -14,7 +14,7 @@ class FrameReport(Frame):
         self.is_show = False
         self.root = root
         self.list_widgets = []
-        self.L_title = None
+        self.title = title
         self.report_treeview = TreeviewTemp(self, 9, 'none', columns, change_width)
         self.report_treeview.add_headers(tags)
         self.create_frame_report(title)
@@ -37,12 +37,12 @@ class FrameReport(Frame):
         """
         creates and edits frame report
         """
-        self.L_title = Label(self, text=title, font=self.title_font)
+        L_title = Label(self, text=title, font=self.title_font)
 
-        self.L_title.grid(row=0, column=0, columnspan=1, pady=self.pad_y_label)
+        L_title.grid(row=0, column=0, columnspan=1, pady=self.pad_y_label)
         self.report_treeview.frame.grid(row=1, column=0, columnspan=1, pady=self.pad_y)
 
-        self.list_widgets = [self, self.L_title, self.report_treeview]
+        self.list_widgets = [self, L_title, self.report_treeview]
 
     def show_main_menu(self):
         """

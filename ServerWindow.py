@@ -116,9 +116,11 @@ class ServerWindow(WindowTemplate):
         actions to do according to the received message
         :param message: received message
         """
+        if message.is_message_log_info():
+            logging.info(message.data)
         if message.is_message_exit():
             self.delete_player_by_id(message.id)
-        if message.is_message_game_info_request() and message.is_message_have_data():
+        if message.is_message_game_results() and message.is_message_have_data():
             player_info, game_info = message.data
             self.update_information(player_info, game_info)
             self.update_report_frame(self.F_report_players, True)
@@ -132,6 +134,7 @@ class ServerWindow(WindowTemplate):
         """
         player_info = self.dic_players_info[new_player_info.get_id()]
         player_info.update_info(new_player_info, game_info)
+        logging.info("Updated local data")
 
     def show_player_info(self, player_info):
         """
@@ -141,6 +144,7 @@ class ServerWindow(WindowTemplate):
         self.F_main_menu.grid_forget()
         self.F_player_info.edit(player_info)
         self.F_player_info.grid(row=0, column=0)
+        logging.info('Opened player information frame')
 
     def get_player_info(self):
         """
@@ -181,6 +185,7 @@ class ServerWindow(WindowTemplate):
             click_sound_valid()
             for player_id in list(self.dic_players_connected):
                 self.delete_player_by_id(player_id)
+            logging.info('User disconnected all players')
         else:
             click_sound_error()
 
@@ -360,10 +365,10 @@ class ServerWindow(WindowTemplate):
         closing all connections and closing the app
         """
         self.delete_all_players_from_listbox()
-        while bool(self.dic_players_connected) is True:
-            time.sleep(1)
-
         self.run_call = False
+        while bool(self.dic_players_connected) is True or self.Q_messages_received.empty() is False:
+            self.check_queue_received()
+
         self.event.set()
         super().exit_app()
 
@@ -398,6 +403,7 @@ class ServerWindow(WindowTemplate):
             click_sound_valid()
             self.forget_frame(frame_hide)
             self.grid_report_frame(frame_show, is_player_report)
+            logging.info('Opened ' + frame_show.title)
         else:
             click_sound_error()
             self.forget_frame(frame_show)
@@ -413,6 +419,7 @@ class ServerWindow(WindowTemplate):
         if frame.is_show:
             frame.grid_forget()
             frame.is_show = False
+            logging.info('Closed ' + frame.title)
         if self.L_gif.is_show:
             self.L_gif.grid_forget()
             self.L_gif.is_show = False

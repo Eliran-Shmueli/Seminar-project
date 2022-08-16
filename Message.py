@@ -4,8 +4,8 @@ class Message:
         init Message
         :param client_id: the id of a client
         """
-        self.dict_messages = {0: "join request", 1: "accepted", 2: "choose", 3: "exit", 4: "goodbye", 5: "game info "
-                                                                                                         "request"}
+        self.dict_messages = {0: "join request", 1: "accepted", 2: "choose", 3: "exit", 4: "goodbye", 5: "game results",
+                              6: "log_info"}
         self.id = client_id
         self.message = None
         self.num_data = 0
@@ -41,11 +41,17 @@ class Message:
         """
         self.message = self.dict_messages[4]
 
-    def set_message_game_info_request(self):
+    def set_message_game_results(self):
         """
-        set message to "game info request"
+        set message to "game results"
         """
         self.message = self.dict_messages[5]
+
+    def set_message_log_info(self):
+        """
+        set message to "log info"
+        """
+        self.message = self.dict_messages[6]
 
     def add_data_to_message(self, data):
         """
@@ -108,12 +114,22 @@ class Message:
         else:
             return False
 
-    def is_message_game_info_request(self):
+    def is_message_game_results(self):
         """
-        returns true if message is "game info request",if not returns false
+        returns true if message is "game results",if not returns false
         :return: boolean
         """
         if self.message == self.dict_messages[5]:
+            return True
+        else:
+            return False
+
+    def is_message_log_info(self):
+        """
+        returns true if message is "log info",if not returns false
+        :return: boolean
+        """
+        if self.message == self.dict_messages[6]:
             return True
         else:
             return False

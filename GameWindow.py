@@ -60,18 +60,12 @@ class GameWindow(WindowTemplate):
         """
         init game's frames and client server
         """
+        logging.info('Game window started')
         self.init_frames()
         self.message.set_message_join_request()
         self.init_client_server()
         self.send_to_server(self.message)
-        self.run()
-
-    def run(self):
-        """
-        start the game window
-        """
         self.root.mainloop()
-        logging.info('Game window started')
 
     def init_frames(self):
         """
@@ -110,14 +104,15 @@ class GameWindow(WindowTemplate):
         """
         message.add_data_to_message(data)
         self.Q_messages_send.put(message)
+        logging.info("Send message to server, message - " + message.message)
 
     def send_info(self):
         """
-        sends updated info to server
+        sends updated information to server
         data - (playerInfo, gameInfo)
         """
         data = (self.player_info, self.game_info)
-        self.message.set_message_game_info_request()
+        self.message.set_message_game_results()
         self.send_to_server(self.message, data)
 
     def mute_background_music(self, channel=1):
@@ -139,15 +134,20 @@ class GameWindow(WindowTemplate):
         actions to do according to the message content
         :param message_received: message from the server
         """
+        if message_received.is_message_log_info():
+            data = message_received.data
+            logging.info(data)
         if message_received.is_message_exit():
+            logging.info("Received message to exit")
             self.message.set_message_goodbye()
             self.send_to_server(self.message)
             self.run_call = False
             self.event.set()
             super().exit_app()
-        if message_received.is_message_game_info_request():
+        if message_received.is_message_game_results():
+            logging.info("Sends updated data to server")
             game_info = self.player_info.create_copy()
-            self.message.set_message_game_info_request()
+            self.message.set_message_game_results()
             self.send_to_server(self.message, game_info)
         if message_received.is_message_accepted():
             self.start_game()
@@ -300,12 +300,12 @@ class GameWindow(WindowTemplate):
         """
         starting the game
         """
+        logging.info('Player started a new game')
         self.reset_choices()
         self.message.set_message_choose()
         self.send_to_server(self.message)
         click_sound_valid()
         self.load_background_music(1, 'sounds/start.wav', self.num_music_loops)
-        logging.info('Player started a new game')
         self.player_info.increase_num_games()
         self.F_main_menu.grid_forget()
         self.show_frame_in_grid(self.F_game)
@@ -322,7 +322,8 @@ class GameWindow(WindowTemplate):
         self.update_scores()
         self.B_next.configure(state="normal")
         logging.info(
-            'Player chose - ' + self.player_choice)
+            'Player selected - ' + self.player_choice)
+        logging.info('Pc selected - ' + self.pc_choice)
         logging.info(
             'Result - ' + result + ', Player score - ' + str(self.player_score) + ', Pc score - ' + str(self.pc_score))
 

@@ -3,6 +3,8 @@ import selectors
 import types
 import pickle
 
+from Message import Message
+
 
 class Client:
     HEADERSIZE = 10
@@ -34,8 +36,7 @@ class Client:
         """
         server_addr = (host, port)
 
-        print(f"client id " + str(self.player_id) + " - Starting connection - player id " + str(
-            self.player_id) + " to " + str(server_addr))
+        self.log_message(f"Starting connection - player id " + str(self.player_id) + " to " + str(server_addr))
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.setblocking(False)
         sock.connect_ex(server_addr)
@@ -56,8 +57,6 @@ class Client:
                 # Check for a socket being monitored to continue.
                 if not self.sel.get_map():
                     break
-        except OSError:
-            print("client id " + str(self.player_id) + " - Server is not connected")
         finally:
             self.sel.close()
 
@@ -76,9 +75,7 @@ class Client:
                 data.byte_in += recv_data
                 message_received = pickle.loads(data.byte_in[self.HEADERSIZE:])
                 self.Q_messages_received.put(message_received)
-                print("client id " + str(self.player_id) + " - info from server: " + message_received.message)
-                if message_received.is_message_have_data():
-                    print("server chose - " + message_received.data)
+                self.log_message("Info from server: " + message_received.message)
                 data.byte_in = b""
 
         if mask & selectors.EVENT_WRITE:
@@ -88,3 +85,13 @@ class Client:
                 if data.byte_out:
                     sent = sock.send(data.byte_out)  # Should be ready to write
                     data.byte_out = data.byte_out[sent:]
+
+    def log_message(self, logs):
+        """
+        sends to main thread info to log
+        :param logs: str
+        """
+        log = Message(-1)
+        log.set_message_log_info()
+        log.add_data_to_message(logs)
+        self.Q_messages_received.put(log)

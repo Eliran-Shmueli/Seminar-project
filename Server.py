@@ -2,19 +2,8 @@ import socket
 import selectors
 import types
 import pickle
-import logging
 import random
 from Message import Message
-
-
-def computer_pick():
-    """
-    generate random option for the computer
-    :return: "rock"|"paper"|"scissors"
-    """
-    choice = random.choice(["rock", "paper", "scissors"])
-    logging.info('Pc chose - ' + choice)
-    return choice
 
 
 class Server:
@@ -24,7 +13,7 @@ class Server:
         """
         init server
         :param Q_messages_send: queue of messages to send
-        :param Q_messages_received: queue of messages sever received
+        :param Q_messages_received: queue of messages server received
         :param dic_players: dictionary of players
         :param event: an Event to stop the server
         """
@@ -35,7 +24,7 @@ class Server:
         self.port = 1231
         self.full_msg = b''
         self.dic_players = dic_players
-        self.message = Message(-1)
+        self.message = Message(0)
         self.event_stop = event
 
     def run(self):
@@ -46,7 +35,7 @@ class Server:
         lsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         lsock.bind((self.host, self.port))
         lsock.listen()
-        print(f"sever - Listening on {(self.host, self.port)}")
+        self.log_message(f"Listening on {(self.host, self.port)}")
         lsock.setblocking(False)
         self.sel.register(lsock, selectors.EVENT_READ, data=None)
 
@@ -61,8 +50,6 @@ class Server:
                         self.accept_wrapper(key.fileobj)
                     else:
                         self.service_connection(key, mask)
-        except KeyboardInterrupt:
-            print("sever - Caught keyboard interrupt, exiting")
         finally:
             self.sel.close()
 
@@ -72,11 +59,11 @@ class Server:
         :param sock: socket of the server
         """
         socket_connected, addr = sock.accept()  # Should be ready to read
-        print(f"server - Accepted connection from {addr}")
         socket_connected.setblocking(False)
         data = types.SimpleNamespace(addr=addr, byte_in=b"", byte_out=b"")
         events = selectors.EVENT_READ | selectors.EVENT_WRITE
         self.sel.register(socket_connected, events, data=data)
+        self.log_message(f"Accepted connection from {addr}")
 
     def service_connection(self, key, mask):
         """
@@ -91,11 +78,10 @@ class Server:
             if recv_data:
                 data.byte_in += recv_data
                 message_received = pickle.loads(data.byte_in[self.HEADERSIZE:])
-                print("sever - info from client " + message_received.message)
+                self.log_message("Info from client "+ str(message_received.id)+": "+ message_received.message)
                 self.actions(message_received, key)
                 data.byte_in = b''
         if mask & selectors.EVENT_WRITE:
-
             if data.byte_out:
                 sent = sock.send(data.byte_out)  # Should be ready to write
                 data.byte_out = data.byte_out[sent:]
@@ -108,12 +94,10 @@ class Server:
         :param key: socket
         """
         if message_received.is_message_goodbye():
-            print("client id " + str(message_received.id) + " has exit")
-            print(f"sever - Closing connection to {key.data.addr}")
-            del self.dic_players[message_received.id]
-            self.sel.unregister(key.fileobj)
-            key.fileobj.close()
-        elif message_received.is_message_game_info_request() or message_received.is_message_exit():
+            self.log_message("client id " + str(message_received.id) + " has exit")
+            self.log_message(f"Closing connection to {key.data.addr}")
+            self.close_client_connection(message_received, key)
+        elif message_received.is_message_game_results() or message_received.is_message_exit():
             self.Q_messages_received.put((key, message_received))
         else:
             if message_received.is_message_join_request():
@@ -122,7 +106,7 @@ class Server:
                 self.message.set_message_accepted()
             if message_received.is_message_choose():
                 self.message.set_message_choose()
-                self.message.add_data_to_message(computer_pick())
+                self.message.add_data_to_message(self.computer_pick(message_received.id))
             self.append_message(key.data, self.message)
 
     def append_message(self, data, message):
@@ -133,3 +117,32 @@ class Server:
         """
         data.byte_out = pickle.dumps(message)
         data.byte_out = bytes(f"{len(data.byte_out):<{self.HEADERSIZE}}", 'utf-8') + data.byte_out
+
+    def close_client_connection(self, message_received, key):
+        """
+        close connection with client and remove him from dictionary
+        :param message_received: massage from client
+        :param key: socket
+        """
+        del self.dic_players[message_received.id]
+        self.sel.unregister(key.fileobj)
+        key.fileobj.close()
+
+    def log_message(self, logs):
+        """
+        sends to main thread info to log
+        :param logs: str
+        """
+        log = Message(0)
+        log.set_message_log_info()
+        log.add_data_to_message(logs)
+        self.Q_messages_received.put((None, log))
+
+    def computer_pick(self,id):
+        """
+        generate random option for the computer
+        :return: "rock"|"paper"|"scissors"
+        """
+        choice = random.choice(["rock", "paper", "scissors"])
+        self.log_message("Selected " + choice+", sends to client "+ str(id))
+        return choice
