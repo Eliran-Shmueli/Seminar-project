@@ -1,3 +1,4 @@
+from ClickSounds import click_sound_valid
 from GameInfo import GameInfo
 from Client_server import Client
 from GifLabel import GifLabel
@@ -302,7 +303,7 @@ class GameWindow(WindowTemplate):
         self.reset_choices()
         self.message.set_message_choose()
         self.send_to_server(self.message)
-        self.click_sound_valid()
+        click_sound_valid()
         self.load_background_music(1, 'sounds/start.wav', self.num_music_loops)
         logging.info('Player started a new game')
         self.player_info.increase_num_games()
@@ -313,7 +314,7 @@ class GameWindow(WindowTemplate):
         """
         play game and updates accordingly
         """
-        self.click_sound_valid()
+        click_sound_valid()
         logging.info('Round ' + str(self.round_count))
         self.round_count = self.round_count + 1
         result = self.get_round_result()
@@ -331,7 +332,7 @@ class GameWindow(WindowTemplate):
         if the game is over or someone score a 2 - go to the final result frame
         else go to the next round
         """
-        self.click_sound_valid()
+        click_sound_valid()
         if (self.round_count > 3) or (self.player_score == 2) or (self.pc_score == 2):
             self.update_final_round_frame()
             self.send_info()
@@ -389,7 +390,7 @@ class GameWindow(WindowTemplate):
         saves the player pick the player choice and config bottom button to normal
         :param pick: what the button represents
         """
-        self.click_sound_valid()
+        click_sound_valid()
         self.disable_choices_buttons()
         self.player_choice = pick
         self.check_if_everybody_choose()

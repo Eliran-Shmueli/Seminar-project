@@ -2,6 +2,8 @@ from tkinter import *
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
+from ClickSounds import click_sound_valid
+
 
 class FrameInfo(Frame):
     pad_y = 10
@@ -112,5 +114,6 @@ class FrameInfo(Frame):
         """
         hide frame info and shows main menu
         """
+        click_sound_valid()
         self.grid_forget()
         self.F_main_menu.grid(row=0, column=0)

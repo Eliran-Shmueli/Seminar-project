@@ -2,6 +2,8 @@
 import multiprocessing
 import operator
 import time
+
+from ClickSounds import click_sound_valid, click_sound_error
 from FrameInfo import FrameInfo
 from FrameReport import FrameReport
 from GameInfo import GameInfo
@@ -144,7 +146,7 @@ class ServerWindow(WindowTemplate):
         """
         get selected player information from client
         """
-        self.click_sound_valid()
+        click_sound_valid()
         selected_player = self.treeview.selection()
         if selected_player:
             player_from_listbox = self.treeview.item(selected_player[0]).get("values")
@@ -154,13 +156,13 @@ class ServerWindow(WindowTemplate):
             self.show_player_info(player_info)
             logging.info('Getting player id: ' + str(player_id) + ', name: ' + player_name + 'information')
         else:
-            self.click_sound_error()
+            click_sound_error()
 
     def delete_selected_player_from_listbox(self):
         """
         delete selected player by the user from listbox and disconnect it
         """
-        self.click_sound_valid()
+        click_sound_valid()
         selected_player = self.treeview.selection()
         if selected_player:
             player_info = self.treeview.item(selected_player[0]).get("values")
@@ -169,18 +171,18 @@ class ServerWindow(WindowTemplate):
             self.delete_player_by_id(player_id)
             logging.info('Player id: ' + str(player_id) + ', name: ' + player_name + 'was disconnected')
         else:
-            self.click_sound_error()
+            click_sound_error()
 
     def delete_all_players_from_listbox(self):
         """
         delete all players from listbox and disconnect all of them
         """
         if len(self.treeview.get_children()) != 0:
-            self.click_sound_valid()
+            click_sound_valid()
             for player_id in list(self.dic_players_connected):
                 self.delete_player_by_id(player_id)
         else:
-            self.click_sound_error()
+            click_sound_error()
 
     def delete_player_by_id(self, player_id):
         """
@@ -345,12 +347,12 @@ class ServerWindow(WindowTemplate):
         """
         name = E_playerName.get()
         if (len(name) != 0) and (name.isalpha() and (len(name) <= self.name_length)):
-            self.click_sound_valid()
+            click_sound_valid()
             self.L_error_msg.configure(text="")
             E_playerName.delete(0, 'end')
             self.add_new_player(name)
         else:
-            self.click_sound_error()
+            click_sound_error()
             self.L_error_msg.configure(text="Error: Name can be only with letters, no spaces and in max length of 12")
 
     def exit_app(self):
@@ -393,11 +395,11 @@ class ServerWindow(WindowTemplate):
         :param is_player_report: true if frame_shoe is player_report, else false
         """
         if not frame_show.is_show:
-            self.click_sound_valid()
+            click_sound_valid()
             self.forget_frame(frame_hide)
             self.grid_report_frame(frame_show, is_player_report)
         else:
-            self.click_sound_error()
+            click_sound_error()
             self.forget_frame(frame_show)
             self.L_gif.grid(row=4, column=0, columnspan=2, pady=self.pad_y, padx=self.pad_x)
             self.L_gif.is_show = True

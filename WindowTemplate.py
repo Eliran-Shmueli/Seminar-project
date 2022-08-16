@@ -2,10 +2,11 @@ import queue
 import threading
 from tkinter.colorchooser import askcolor
 from tkinter import *
-import winsound
 import logging
 import pygame
 import time
+
+from ClickSounds import click_sound_exit
 from FrameInfo import FrameInfo
 from FrameReport import FrameReport
 from TreeviewTemp import TreeviewTemp
@@ -86,7 +87,7 @@ class WindowTemplate:
         """
         if is_server:
             #  self.root.geometry('+0+0')
-            self.root.geometry('1500x750')
+            self.root.geometry('1400x750')
         else:
             self.config_geometry()
         self.root.resizable(True, True)
@@ -144,7 +145,7 @@ class WindowTemplate:
         """
         closing mixer and closing window
         """
-        self.click_sound_exit()
+        click_sound_exit()
         time.sleep(1)
         logging.info('Exit program')
         pygame.mixer.quit()
@@ -215,22 +216,3 @@ class WindowTemplate:
         """
         if self.run_call is True:
             self.root.after(1000, self.check_queue_received)
-
-    def click_sound_valid(self):
-        """
-        play valid sound on click
-        """
-        winsound.PlaySound('sounds/mixkit-select-click-1109.wav', winsound.SND_FILENAME | winsound.SND_ASYNC)
-
-    def click_sound_error(self):
-        """
-        play error sound on click
-        """
-        winsound.PlaySound('sounds/mixkit-click-error-1110.wav', winsound.SND_FILENAME | winsound.SND_ASYNC)
-
-    def click_sound_exit(self):
-        """
-        play exit sound on click
-        """
-        winsound.PlaySound('sounds/sci-fi-voiceclip-894-sound-effect-goodbye.wav',
-                           winsound.SND_FILENAME | winsound.SND_ASYNC)
