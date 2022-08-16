@@ -108,7 +108,7 @@ class Server:
                 self.message.set_message_choose()
                 choice = self.computer_pick()
                 self.message.add_data_to_message(choice)
-                self.log_message("Selected " + choice + ", sends to client " + str(id))
+                self.log_message("Selected " + choice + ", sends to client " + str(message_received.id))
             self.append_message(key.data, self.message)
 
     def append_message(self, data, message):
