@@ -75,7 +75,6 @@ class Client:
                 data.byte_in += recv_data
                 message_received = pickle.loads(data.byte_in[self.HEADERSIZE:])
                 self.Q_messages_received.put(message_received)
-                self.log_message("Info from server: " + message_received.message)
                 data.byte_in = b""
 
         if mask & selectors.EVENT_WRITE:

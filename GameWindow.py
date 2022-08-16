@@ -150,6 +150,7 @@ class GameWindow(WindowTemplate):
             self.message.set_message_game_results()
             self.send_to_server(self.message, game_info)
         if message_received.is_message_accepted():
+            logging.info("Info from server: " + message_received.message)
             self.start_game()
         if message_received.is_message_choose():
             self.pc_choice = message_received.data

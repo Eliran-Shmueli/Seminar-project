@@ -3,13 +3,15 @@ import threading
 from tkinter.colorchooser import askcolor
 from tkinter import *
 import logging
-import pygame
-import time
-
 from ClickSounds import click_sound_exit
 from FrameInfo import FrameInfo
 from FrameReport import FrameReport
 from TreeviewTemp import TreeviewTemp
+import time
+import os
+
+os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
+import pygame
 
 
 class WindowTemplate:
@@ -202,4 +204,4 @@ class WindowTemplate:
         a loop function that calls function check_queue_received every 1 seconds,
         """
         if self.run_call is True:
-            self.root.after(1000, self.check_queue_received)
+            self.root.after(500, self.check_queue_received)
