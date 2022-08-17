@@ -87,7 +87,6 @@ class PlayerInfo:
         :param player_info: new player info
         :param game_info: new game info
         """
-        self.List_games.append(game_info)  # adds game info to list
         self.num_games = self.num_games + player_info.num_games
         self.num_wins = self.num_wins + player_info.num_wins
         self.num_losses = self.num_losses + player_info.num_losses
@@ -95,6 +94,8 @@ class PlayerInfo:
         self.num_rock = self.num_rock + player_info.num_rock
         self.num_paper = self.num_paper + player_info.num_paper
         self.num_scissors = self.num_scissors + player_info.num_scissors
+        if self.id != 0:
+            self.List_games.append(game_info)  # adds game info to list
 
     def clear_results(self):
         """

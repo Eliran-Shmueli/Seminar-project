@@ -32,6 +32,7 @@ class WindowTemplate:
         :param is_server: boolean, true - server, false - client
         """
         self.channel = None
+        self.server_id = 0
         self.event_id = None
         self.menubar = None
         self.root = Tk()

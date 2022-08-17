@@ -60,7 +60,7 @@ class ServerWindow(WindowTemplate):
         self.F_report_players = self.init_report_frame(PlayerInfo, "Players report")
         self.F_report_games = self.init_report_frame(GameInfo, "Games report")
         self.F_player_info = FrameInfo(self.root, self.F_main_menu)
-        self.add_player_info(self.player_id_count, "Pc")
+        self.add_player_info(self.server_id, "Pc")
         self.add_widgets(self.F_player_info.list_widgets)
         self.treeview = None
         self.edit_server_frame()
@@ -121,19 +121,21 @@ class ServerWindow(WindowTemplate):
         if message.is_message_exit():
             self.delete_player_by_id(message.id)
         if message.is_message_game_results() and message.is_message_have_data():
-            player_info, game_info = message.data
-            self.update_information(player_info, game_info)
+            player_info, pc_info, game_info = message.data
+            self.update_information(player_info, pc_info, game_info)
             self.update_report_frame(self.F_report_players, True)
             self.update_report_frame(self.F_report_games, False)
 
-    def update_information(self, new_player_info, game_info):
+    def update_information(self, new_player_info, new_pc_info, game_info):
         """
         update players and games dictionaries
         :param new_player_info: new player info
         :param game_info: new game info
         """
         player_info = self.dic_players_info[new_player_info.get_id()]
+        pc_info = self.dic_players_info[self.server_id]
         player_info.update_info(new_player_info, game_info)
+        pc_info.update_info(new_pc_info, None)
         logging.info("Updated local data")
 
     def show_player_info(self, player_info):
