@@ -366,6 +366,7 @@ class ServerWindow(WindowTemplate):
         :param E_playerName: Entry of add player frame
         """
         name = E_playerName.get()
+        name = name.capitalize()
         if (len(name) != 0) and (name.isalpha()) and (len(name) <= self.name_length):
             if self.is_name_uniq(name) is True:  # add new player
                 self.clear_entry(E_playerName)
