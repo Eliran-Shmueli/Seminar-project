@@ -1,6 +1,7 @@
 # Music by FASSounds from Pixabay
 import multiprocessing
 import operator
+import pickle
 import time
 
 from ClickSounds import click_sound_valid, click_sound_error
@@ -48,6 +49,7 @@ class ServerWindow(WindowTemplate):
         init server window
         """
         super().__init__("R.P.S - Server", True)
+        self.file = None
         self.B_show_games_report = None
         self.B_show_players_report = None
         self.L_gif = None
@@ -61,6 +63,7 @@ class ServerWindow(WindowTemplate):
         self.F_report_games = self.init_report_frame(GameInfo, "Games report")
         self.F_player_info = FrameInfo(self.root, self.F_main_menu)
         self.add_player_info(self.server_id, "Pc")
+        self.load_history_from_file()
         self.add_widgets(self.F_player_info.list_widgets)
         self.treeview = None
         self.edit_server_frame()
@@ -361,7 +364,8 @@ class ServerWindow(WindowTemplate):
                 self.add_new_player(name)
             else:
                 click_sound_error()
-                self.L_error_msg.configure(text="Error: Player with this name already exists in the system")
+                self.L_error_msg.configure(
+                    text="Error: Player with this name already exists in the system, please selected another name")
         else:
             click_sound_error()
             self.L_error_msg.configure(text="Error: Name can be only with letters, no spaces and in max length of 12")
@@ -385,8 +389,8 @@ class ServerWindow(WindowTemplate):
         self.run_call = False
         while bool(self.dic_players_connected) is True or self.Q_messages_received.empty() is False:
             self.check_queue_received()
-
         self.event.set()
+        self.write_history_to_file()
         super().exit_app()
 
     def sort_player_info_dict(self):
@@ -476,3 +480,26 @@ class ServerWindow(WindowTemplate):
             for game in player.List_games:
                 list_gameinfo.append(game)
         return list_gameinfo
+
+    def write_history_to_file(self):
+        """
+        writes system information to file history.pkl
+        """
+        file = open("history.pkl", "wb+")
+        pickle.dump(self.dic_players_info, file)
+        file.close()
+        logging.info("Wrote data to history.pkl")
+
+    def load_history_from_file(self):
+        """
+        loads system information from file history.pkl and updates player_id_count
+        """
+        try:
+            file = open("history.pkl", "rb")
+            info = pickle.Unpickler(file)
+            self.dic_players_info = info.load()
+            key = max(self.dic_players_info.keys())
+            self.player_id_count=key
+            file.close()
+        except FileNotFoundError:
+            logging.info("File history.pkl does not exits, the app will create a new file when closed")

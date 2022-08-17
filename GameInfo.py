@@ -22,7 +22,7 @@ class GameInfo:
 
     def get_date_and_time(self):
         time = datetime.now()
-        return time.strftime("%d/%m/%Y,  %H:%M:%S")
+        return time.strftime("%d/%m/%Y, %H:%M:%S")
 
     def increase_num_rounds(self):
         """
