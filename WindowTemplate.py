@@ -43,7 +43,7 @@ class WindowTemplate:
         self.playing_music = True
         self.run_call = True
         self.event = threading.Event()
-        logging.basicConfig(filename=window_name + '.log', filemode='w', format='%(asctime)s - %(message)s',
+        logging.basicConfig(filename=window_name + '.log', filemode='a+', format='%(asctime)s - %(message)s',
                             level=logging.INFO)
         self.init_background_music()
         self.config_template(window_name, is_server)
