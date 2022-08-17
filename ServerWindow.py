@@ -366,16 +366,17 @@ class ServerWindow(WindowTemplate):
             click_sound_error()
             self.L_error_msg.configure(text="Error: Name can be only with letters, no spaces and in max length of 12")
 
-    def is_name_uniq(self,name):
+    def is_name_uniq(self, name):
         """
         checks if a player with this name is not in the system
         :param name: str
         :return: True - name is uniq, else False
         """
         for player_info in self.dic_players_info.values():
-            if name==player_info.name:
+            if name == player_info.name:
                 return False
         return True
+
     def exit_app(self):
         """
         closing all connections and closing the app
