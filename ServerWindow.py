@@ -88,7 +88,6 @@ class ServerWindow(WindowTemplate):
         """
         adds new player to the server
         :param name: name of the player
-        :return: player's id
         """
         self.player_id_count = self.player_id_count + 1
         player_new = Player(self.player_id_count, name)
@@ -97,7 +96,18 @@ class ServerWindow(WindowTemplate):
         create_player_process(player_new)
         self.dic_players_connected[self.player_id_count] = player_new
         logging.info('Player ' + "Id: " + str(self.player_id_count) + ", Name: " + name + ' was added')
-        return self.player_id_count
+
+    def add_existing_player(self, id, name):
+        """
+        connecting existing player to the system
+        :param id: int
+        :param name: str
+        """
+        player_new = Player(id, name)
+        self.treeview.insert('', END, values=(id, name))
+        create_player_process(player_new)
+        self.dic_players_connected[id] = player_new
+        logging.info('Player ' + "Id: " + str(id) + ", Name: " + name + ' was added')
 
     def mute_background_music(self, channel=0):
         """
@@ -357,18 +367,48 @@ class ServerWindow(WindowTemplate):
         """
         name = E_playerName.get()
         if (len(name) != 0) and (name.isalpha()) and (len(name) <= self.name_length):
-            if self.is_name_uniq(name) is True:
-                click_sound_valid()
-                self.L_error_msg.configure(text="")
-                E_playerName.delete(0, 'end')
+            if self.is_name_uniq(name) is True:  # add new player
+                self.clear_entry(E_playerName)
                 self.add_new_player(name)
-            else:
-                click_sound_error()
-                self.L_error_msg.configure(
-                    text="Error: Player with this name already exists in the system, please selected another name")
+            else:  # player already exits
+                player_id = self.get_player_info_by_name(name)
+                if self.is_player_already_connected(name) is True or player_id == 0:  # player is already connected
+                    click_sound_error()
+                    self.L_error_msg.configure(
+                        text="Error: Player with this name is already online")
+                else:
+                    self.clear_entry(E_playerName)
+
+                    self.add_existing_player(player_id, name)
         else:
             click_sound_error()
             self.L_error_msg.configure(text="Error: Name can be only with letters, no spaces and in max length of 12")
+
+    def get_player_info_by_name(self, name):
+        for key in self.dic_players_info.keys():
+            if self.dic_players_info[key].get_name() == name:
+                return key
+        return None
+
+    def clear_entry(self, E_playerName):
+        """
+        clear E_playerName entry and play click valid sound
+        :param E_playerName: Entry
+        """
+        click_sound_valid()
+        self.L_error_msg.configure(text="")
+        E_playerName.delete(0, 'end')
+
+    def is_player_already_connected(self, name):
+        """
+        checks if player with the same name is connected
+        :param name: str
+        :return: boolean
+        """
+        for player_info in self.dic_players_connected.values():
+            if name == player_info.name:
+                return True
+        return False
 
     def is_name_uniq(self, name):
         """
@@ -499,7 +539,7 @@ class ServerWindow(WindowTemplate):
             info = pickle.Unpickler(file)
             self.dic_players_info = info.load()
             key = max(self.dic_players_info.keys())
-            self.player_id_count=key
+            self.player_id_count = key
             file.close()
         except FileNotFoundError:
             logging.info("File history.pkl does not exits, the app will create a new file when closed")
