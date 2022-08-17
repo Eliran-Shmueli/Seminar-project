@@ -353,15 +353,24 @@ class ServerWindow(WindowTemplate):
         :param E_playerName: Entry of add player frame
         """
         name = E_playerName.get()
-        if (len(name) != 0) and (name.isalpha() and (len(name) <= self.name_length)):
-            click_sound_valid()
-            self.L_error_msg.configure(text="")
-            E_playerName.delete(0, 'end')
-            self.add_new_player(name)
+        if (len(name) != 0) and (name.isalpha()) and (len(name) <= self.name_length):
+            if self.is_name_uniq(name) is True:
+                click_sound_valid()
+                self.L_error_msg.configure(text="")
+                E_playerName.delete(0, 'end')
+                self.add_new_player(name)
+            else:
+                click_sound_error()
+                self.L_error_msg.configure(text="Player with this name already exists in the system")
         else:
             click_sound_error()
             self.L_error_msg.configure(text="Error: Name can be only with letters, no spaces and in max length of 12")
 
+    def is_name_uniq(self,name):
+        for player_info in self.dic_players_info.values():
+            if name==player_info.name:
+                return False
+        return True
     def exit_app(self):
         """
         closing all connections and closing the app
