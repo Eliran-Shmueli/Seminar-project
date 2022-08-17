@@ -427,7 +427,7 @@ class GameWindow(WindowTemplate):
         if self.player_score == self.pc_score:
             self.load_background_music(1, 'sounds/tie.wav', self.num_music_loops)
             self.L_final_result_img.configure(image=self.images.get("tie"))
-            self.game_info.winner = "Tie"
+            self.game_info.winner = "It's a tie"
             self.player_info.increase_num_ties()
             self.pc_info.increase_num_ties()
             logging.info('The game ended in a tie')
