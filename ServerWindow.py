@@ -385,6 +385,11 @@ class ServerWindow(WindowTemplate):
             self.L_error_msg.configure(text="Error: Name can be only with letters, no spaces and in max length of 12")
 
     def get_player_info_by_name(self, name):
+        """
+        returns player's id
+        :param name: str
+        :return: int
+        """
         for key in self.dic_players_info.keys():
             if self.dic_players_info[key].get_name() == name:
                 return key
