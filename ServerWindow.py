@@ -361,7 +361,7 @@ class ServerWindow(WindowTemplate):
                 self.add_new_player(name)
             else:
                 click_sound_error()
-                self.L_error_msg.configure(text="Player with this name already exists in the system")
+                self.L_error_msg.configure(text="Error: Player with this name already exists in the system")
         else:
             click_sound_error()
             self.L_error_msg.configure(text="Error: Name can be only with letters, no spaces and in max length of 12")
