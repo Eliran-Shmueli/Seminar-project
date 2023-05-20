@@ -1,7 +1,7 @@
 ### <div align="center">Seminar Project</div>  
   
 
-The main objective of this project was to program a game with a server side and a client side in Python, that supports multiple clients.  
+The main objective of this project was to program a game with a server side and a client side in Python, <b>that supports multiple clients</b>.  
   
 
 For the project I selected the game "hand rock paper scissors", because of his known rules.  
