@@ -7,7 +7,7 @@ The main objective of this project was to program a game with a server side and 
 For the project I selected the game "hand rock paper scissors", because of his known rules.  
   
 
-Using GUI and libreries such as pygame and matplotlib, I programed the server side and the client side. 
+Using GUI, Object-Oriented Programming and libreries such as pygame and matplotlib, I programed the server side and the client side. 
   
 <br/>  
 <br/>  
